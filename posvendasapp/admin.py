@@ -38,5 +38,5 @@ class VendasAdmin(admin.ModelAdmin):
 @admin.register(Produtos)
 class ProdutosAdmin(admin.ModelAdmin):
     list_display = ('Produto', 'tipo', 'venda', 'Valor_venda', 'valor_produto_sem_desconto', 'desconto_formatada')
-    search_fields = ('Produto', 'tipo')
+    search_fields = ('Produto', 'tipo','venda__cliente__Nome')#filtro do djangoadmin para Fk
     list_filter = ('tipo', 'venda__cliente__Nome')
