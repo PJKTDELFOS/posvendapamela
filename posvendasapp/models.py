@@ -50,9 +50,6 @@ class Clientes(models.Model):
             super().save(*args, **kwargs)
             self.Arquivos = temp_doc
         super().save(*args, **kwargs)
-
-
-
     class Meta:
         verbose_name = 'Cliente'
         verbose_name_plural = 'Clientes'
