@@ -24,10 +24,15 @@ from .import views
 app_name = 'posvendasapp'
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('',views.posvendasteste,name='posvendasapp'),
+    path('', views.Login.as_view(), name='login_sistema'),
+    path('menuinicial', views.testelogin, name='menuinicial'),
+
+    # path('',views.posvendasteste,name='posvendasapp'),
+    path('fichacliente',views.renderizarfechacliente,name='fichacliente'),
+
+
 ]
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+        urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns+=static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

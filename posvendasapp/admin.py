@@ -13,6 +13,7 @@ class VendasInline(admin.TabularInline):
     model = Vendas
     extra = 0
     readonly_fields = ('valor_total_venda_formatada', 'previsao_de_returno')
+    fk_name = 'cliente'
 
 
 # Admin de Clientes com Vendas Inline

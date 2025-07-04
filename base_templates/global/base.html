@@ -1,0 +1,32 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% include "global/partials/_head.html" %}
+
+</head>
+
+
+<body>
+{%block content %}{% endblock %}
+
+
+
+<script>
+    document.querySelectorAll('select').forEach(select => {
+        select.addEventListener('change', function () {
+
+            const isAnySelectOptionEmpty = Array.from(select.options).some(option => option.value === "" && option.selected);
+
+            if (isAnySelectOptionEmpty) {
+
+                const url = new URL(window.location.href);
+                url.searchParams.delete(this.name);
+                window.location.href = url.toString();
+            }
+        });
+    });
+</script>
+</body>
+</html>

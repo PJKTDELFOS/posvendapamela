@@ -1,0 +1,15 @@
+{% extends "global/base.html" %}
+{% load crispy_forms_tags %}
+
+
+{%block content%}
+
+{% if user.is_authenticated %}
+    voce esta logado
+
+    {% else %}
+    <p> voce nao esta logado faça o login</p>
+
+{% endif %}
+
+{% endblock %}

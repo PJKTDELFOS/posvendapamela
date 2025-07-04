@@ -25,7 +25,7 @@ SECRET_KEY = config(
     'SECRET_KEY',)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = True
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS',cast=Csv())
 
@@ -64,7 +64,7 @@ ROOT_URLCONF = 'posvendas.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR/ 'base_templates'],
+        'DIRS': [BASE_DIR / 'base_templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -132,15 +132,16 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
+STATICFILES_DIRS=[BASE_DIR / 'base_static']
 STATIC_URL = '/static/'
-STATICFILES_DIRS=(
-
-    BASE_DIR/'base_static',
-)
-STATIC_ROOT=BASE_DIR/'static'
+#STATIC_ROOT=BASE_DIR/'static'
 MEDIA_URL='/media/'
 MEDIA_ROOT=BASE_DIR/'media'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+LOGIN_URL='posvendasapp:login_sistema'
+LOGIN_REDIRECT_URL='posvendasapp:menuinicial'
+LOGOUT_REDIRECT_URL='posvendasapp:login_sistema'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
