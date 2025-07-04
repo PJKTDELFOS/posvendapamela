@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Clientes, Vendas, Produtos
+from .models import Clientes, Vendas, Produtos,Equipe
 
 # Produtos Inline em Vendas
 class ProdutosInline(admin.TabularInline):
@@ -12,8 +12,22 @@ class ProdutosInline(admin.TabularInline):
 class VendasInline(admin.TabularInline):
     model = Vendas
     extra = 0
-    readonly_fields = ('valor_total_venda_formatada', 'previsao_de_returno')
-    fk_name = 'cliente'
+    readonly_fields = ('pk','Data_venda','valor_total_venda_formatada', 'previsao_de_returno','get_vendedor_username')
+    fields = ('pk','Data_venda','valor_total_venda_formatada', 'previsao_de_returno','get_vendedor_username')
+    # fk_name = 'cliente'# aqui usa o campo
+
+    def  get_vendedor_username(self,obj):
+        return obj.vendedor.Usuario.username
+    get_vendedor_username.short_description = 'Vendedor'
+
+
+
+#admin equipe-vendedores e outros cargos
+@admin.register(Equipe)
+class EquipeAdmin(admin.ModelAdmin):
+    list_display = ('Usuario__username','Cargo')
+    search_fields = ('Usuario__username','Cargo')
+
 
 
 # Admin de Clientes com Vendas Inline
@@ -28,11 +42,15 @@ class ClientesAdmin(admin.ModelAdmin):
 # Admin de Vendas com Produtos Inline
 @admin.register(Vendas)
 class VendasAdmin(admin.ModelAdmin):
-    list_display = ('cliente', 'Data_venda', 'previsao_de_returno', 'valor_total_venda_formatada')
-    search_fields = ('cliente__Nome',)
+    list_display = ('cliente', 'Data_venda', 'previsao_de_returno', 'valor_total_venda_formatada','vendedor')
+    search_fields = ('cliente__Nome','vendedor__Usuario__username')
     list_filter = ('Data_venda',)
     inlines = [ProdutosInline]
-    readonly_fields = ('valor_total_venda_formatada', 'previsao_de_returno')
+    readonly_fields = ('valor_total_venda_formatada', 'previsao_de_returno','vendedor')
+
+    def  get_vendedor_username(self,obj):
+        return obj.vendedor.Usuario.username
+    get_vendedor_username.short_description = 'Vendedor'
 
 
 # Admin de Produtos isolado (opcional)

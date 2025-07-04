@@ -59,7 +59,7 @@ class Vendas(models.Model):
                               verbose_name='Cliente',blank=False,null=False,related_name='Vendas')
     Data_venda = models.DateField(default=None, blank=False, null=False, verbose_name='Data de venda')
     Previsao = models.IntegerField(blank=True, null=True, verbose_name='Previsao')
-    vendedor=models.ForeignKey(Clientes,on_delete=models.CASCADE,related_name='Vendedor',verbose_name='Vendedor',blank=False,null=False,)
+    vendedor=models.ForeignKey(Equipe,on_delete=models.CASCADE,related_name='Vendedor',verbose_name='Vendedor',blank=False,null=False,)
 
     def __str__(self):
         cliente=self.cliente
