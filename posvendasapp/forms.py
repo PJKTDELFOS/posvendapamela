@@ -30,10 +30,7 @@ class UsuarioForm(forms.ModelForm):
 
 
     def validate_unique(self):
-
         return
-
-
 
     def clean(self):
         cleaned_data = super().clean()
@@ -42,26 +39,21 @@ class UsuarioForm(forms.ModelForm):
         email_data = cleaned_data.get('email')
         password_data = cleaned_data.get('password')
         password2_data = cleaned_data.get('password2')
-
         usuario_db=User.objects.filter(username=usuario_data).first()
         email_db=User.objects.filter(email=email_data).first()
-
-
         erro_msg_user_exists='usuario ja existente'
         erro_msg_email_exists = 'email ja cadastrado'
         erro_msg_pass_match = 'senhas nao conferem'
         erro_msg_pass_len = 'tamanho minimo de senha: 6 ou mais caracteres'
         erro_msg_required='campo obrigatorio'
-
         print(self.cleaned_data)
-
-
         if self.Usuario:
-            if self.Usuario:
-                if usuario_db and usuario_db.id != self.Usuario.id:
-                    validation_error_msg['username'] = erro_msg_user_exists
-                if email_db and email_db.id != self.Usuario.id:
+
+            if usuario_db and usuario_db.id != self.Usuario.id:
+                validation_error_msg['username'] = erro_msg_user_exists
+            if email_db and email_db.id != self.Usuario.id:
                     validation_error_msg['email'] = erro_msg_email_exists
+
             if password_data and password2_data:
                 if password_data != password2_data:
                     validation_error_msg['password'] = erro_msg_pass_match

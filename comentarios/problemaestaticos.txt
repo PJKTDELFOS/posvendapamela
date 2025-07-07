@@ -2,3 +2,38 @@ criar base.html
 extender base.html nos templates do app
 carregar os blocks conforme a necessidade
 incluir no base as partes como head ou header
+
+
+
+para atualizar valor total sem reload
+produto formset
+from .models import Vendas
+from .forms import Vendaforms, ProdutoFormSet
+
+def editar_venda(request, pk):
+    venda = Vendas.objects.get(pk=pk)
+    form = Vendaforms(request.POST or None, instance=venda)
+    formset = ProdutoFormSet(request.POST or None, instance=venda)
+
+    if request.method == 'POST':
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            return redirect('detalhes_venda', pk=venda.pk)
+
+    return render(request, 'vendas/editar_venda.html', {
+        'form': form,
+        'formset': formset,
+        'venda': venda
+    })
+
+
+validação  de vendas
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if not self.instance.cliente: buscar o campo do model
+            self.add_error(None, ' falta cliente')
+        if not self.instance.vendedor: buscar campo do model
+            self.add_error(None, ' falta vendedor')
+        return cleaned_data
