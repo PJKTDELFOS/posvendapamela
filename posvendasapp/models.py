@@ -130,6 +130,35 @@ class Produtos(models.Model):
 
 
 
+class Ocorrencia(models.Model):
+    venda=models.ForeignKey(Vendas,on_delete=models.CASCADE,verbose_name='Venda',related_name='ocorrencias_venda')
+    vendedor=models.ForeignKey(Equipe,on_delete=models.CASCADE,related_name='Vendedor_ocorrencia',
+                               verbose_name='Vendedor',blank=False,null=False,)
+    titulo_ocorrencia=models.CharField(default=None, max_length=255, blank=False, null=False, verbose_name='Titulo')
+    tipo_ocorrencia=models.CharField(default=None, max_length=60, choices=(
+        ('Troca-compra errada', 'Troca compra Errada'),
+        ('Troca-Garantia', 'Troca-Garantia'),
+        ('Atualização', 'Atualização'),
+        ('Manutenção', 'Manutenção')
+        ), null=False, blank=False)
+
+    data_correncia=models.DateField(auto_now_add=True, blank=False, null=False, verbose_name='Data de correncia')
+    ocorrencia=models.TextField(default='Descreva a ocorrencia',
+                                blank=True, null=True, verbose_name='Ocorrencia',max_length=5000)
+
+    def __str__(self):
+        return f' venda :{self.venda.pk}- Ocorrenia:{self.titulo_ocorrencia} '
+
+
+    class Meta:
+        verbose_name = 'Ocorrencia'
+        verbose_name_plural = 'Ocorrencias'
+
+
+
+
+
+
 
 
 

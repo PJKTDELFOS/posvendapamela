@@ -2,6 +2,7 @@ criar base.html
 extender base.html nos templates do app
 carregar os blocks conforme a necessidade
 incluir no base as partes como head ou header
+incluir segurança maxima no sistema
 
 
 
