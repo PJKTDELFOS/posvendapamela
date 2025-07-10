@@ -4,12 +4,16 @@
 
 <head>
     {% include "global/partials/_head.html" %}
-
 </head>
 
-
 <body>
-{%block content %}{% endblock %}
+{% include "global/partials/_header.html" %}
+
+<main>
+    {%block content %}{% endblock %}
+</main>
+
+
 
 
 

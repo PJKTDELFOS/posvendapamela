@@ -1,7 +1,15 @@
-{%block contente%} 
+{% extends "global/base.html" %}
+{% load crispy_forms_tags %}
 
-<p>
-    estou as vendasprto fichaodu
-</p>
+
+{%block content%}
+
+{% if user.is_authenticated %}
+    voce esta logado nas vendas
+
+    {% else %}
+    <p> voce nao esta logado faça o login</p>
+
+{% endif %}
 
 {% endblock %}

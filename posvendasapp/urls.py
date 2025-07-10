@@ -25,10 +25,19 @@ app_name = 'posvendasapp'
 
 urlpatterns = [
     path('', views.Login.as_view(), name='login_sistema'),
-    path('menuinicial', views.testelogin, name='menuinicial'),
+
+    path('logout', views.Logout.as_view(),name='logout'),
+    path('menuinicial/', views.testelogin, name='menuinicial'),
+
+    path('cadastrar_equipe', views.CadastrarEquipe.as_view(), name='cadastrar_equipe'),
+
+
 
     # path('',views.posvendasteste,name='posvendasapp'),
-    path('fichacliente',views.renderizarfechacliente,name='fichacliente'),
+
+    path('tabela_equipe', views.teste_tabelaEquipe, name='tabela_equipe'),
+
+
 
 
 ]

@@ -1,0 +1,44 @@
+{% if user.is_authenticated %}
+    <div class="navbar">
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <p class="navbar-title">YOSSEF POSVENDAS</p>
+<!-- aumentar botoes -->
+            <a href="#">Início</a>
+
+            <div class="dropdown">
+                <a href="#">Posvendas ▾</a>
+                <div class="dropdown-content">
+                    <a href="#">Clientes</a>
+                    <a href="#">Vendas</a>
+                    <a href="#">Produtos</a>
+                    <a href="#">Ocorrencias</a>
+                </div>
+            </div>
+
+            <div class="dropdown"><!-- aqui fazer opçoes somente para gerencia em diante -->
+                <a href="#">Equipe ▾</a>
+                <div class="dropdown-content">
+                    <a href="#">Atualizar cadastro</a>
+                    <a href="#">ver o que fazer aqui</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- search + logout separados na direita -->
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="search-bar">
+                <form action="#" method="get" style="display: flex; gap: 5px;">
+                    <input type="text" name="q" placeholder="Buscar..." required style="padding: 5px; width: 200px;">
+                    <button type="submit">🔍</button>
+                </form>
+            </div>
+            <a href="{% url 'posvendasapp:logout' %}">Logout</a>
+        </div>
+    </div>
+{% else %}
+    <div class="navbar">
+        <p class="navbar-title">YOSSEF POSVENDAS</p>
+        <a href="{% url 'posvendasapp:cadastrar_equipe' %}">Registrar </a>
+        <a href="#">Esqueceu sua senha</a>
+    </div>
+{% endif %}

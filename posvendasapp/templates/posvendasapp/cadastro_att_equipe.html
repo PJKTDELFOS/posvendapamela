@@ -1,0 +1,22 @@
+{% extends "global/base.html" %}
+{% load crispy_forms_tags %}
+
+
+{%block content %}
+
+    <form method="post">
+    {% csrf_token %}
+    <h2>Dados do Usuário</h2>
+        {{ form_usuario.non_field_errors }}
+    {{ form_usuario.as_p }}
+    {% csrf_token %}
+    <h2>Dados do Cargo</h2>
+        {{ form_equipe.non_field_errors }}
+    {{ form_equipe.as_p }}
+
+    <button type="submit">Salvar</button>
+</form>
+
+
+
+{% endblock %}
