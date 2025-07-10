@@ -3,20 +3,26 @@
 
 
 {%block content %}
+    <h2>
+    {% if modo == 'edição' %}
+    <P>EDITAR EQUIPE</P>
+    {% elif modo == 'criação'  %}
+    <P>CADASTRAR EQUIPE</P>
+    {% endif %}
+    </h2>
 
     <form method="post">
     {% csrf_token %}
-    <h2>Dados do Usuário</h2>
-        {{ form_usuario.non_field_errors }}
     {{ form_usuario.as_p }}
-    {% csrf_token %}
-    <h2>Dados do Cargo</h2>
-        {{ form_equipe.non_field_errors }}
     {{ form_equipe.as_p }}
 
-    <button type="submit">Salvar</button>
+    <button type="submit">
+    {% if modo == 'edição' %}
+        Editar Equipe
+    {% elif modo == 'criação' %}
+        Cadastrar Equipe
+    {% endif %}
+    </button>
 </form>
-
-
 
 {% endblock %}

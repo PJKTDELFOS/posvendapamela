@@ -61,6 +61,7 @@ class CadastrarEquipe(View):
         return render(request, self.template_name,{
             'form_usuario':form_usuario,
             'form_equipe':form_equipe,
+            'modo': 'criação'
         })
 
     def post(self, request, *args, **kwargs):
@@ -72,13 +73,13 @@ class CadastrarEquipe(View):
         usuario_valido = form_usuario.is_valid()
         equipe_valida = form_equipe.is_valid()
 
-        if not usuario_valido:
-            print('esta com algum erro no usuario')
-            print('Erros Usuário:', form_usuario.errors.as_data())
-
-        if not equipe_valida:
-            print('esta com algum erro na equipe')
-            print('Erros Equipe:', form_equipe.errors.as_json())
+        # if not usuario_valido:
+        #     print('esta com algum erro no usuario')
+        #     print('Erros Usuário:', form_usuario.errors.as_data())
+        #
+        # if not equipe_valida:
+        #     print('esta com algum erro na equipe')
+        #     print('Erros Equipe:', form_equipe.errors.as_json())
 
         if usuario_valido and equipe_valida:
             user = form_usuario.save(commit=False)
@@ -89,13 +90,69 @@ class CadastrarEquipe(View):
             equipe.Usuario = user
             equipe.save()
 
-            print("Redirecionando para tabela_equipe")
+            # print("Redirecionando para tabela_equipe")
             return redirect('posvendasapp:tabela_equipe')
 
         return render(request, self.template_name, {
             'form_usuario': form_usuario,
             'form_equipe': form_equipe,
+            'modo':'criação'
         })
+
+
+class Atualizar_membro_Equipe(View):
+    template_name = 'posvendasapp/cadastro_att_equipe.html'
+    def get(self, request, equipe_id):
+        equipe=get_object_or_404(Equipe,id=equipe_id)
+        usuario=equipe.Usuario
+        form_usuario=UsuarioForm(instance=usuario,Usuario=usuario)
+        form_equipe=EquipeForm(instance=equipe)
+            #aqui passa o contexto para os 2 formularios
+        return render(request, self.template_name,{
+            'form_usuario':form_usuario,
+            'form_equipe':form_equipe,
+            'modo': 'edição'
+        })
+
+    def post(self, request, equipe_id):
+        equipe = get_object_or_404(Equipe, id=equipe_id)
+        usuario = equipe.Usuario
+        form_usuario = UsuarioForm(request.POST,instance=usuario, Usuario=usuario)
+        form_equipe = EquipeForm(request.POST,instance=equipe)
+
+
+
+        usuario_valido = form_usuario.is_valid()
+        equipe_valida = form_equipe.is_valid()
+
+        # if not usuario_valido:
+        #     print('esta com algum erro no usuario')
+        #     print('Erros Usuário:', form_usuario.errors.as_data())
+        #
+        # if not equipe_valida:
+        #     print('esta com algum erro na equipe')
+        #     print('Erros Equipe:', form_equipe.errors.as_json())
+
+        if usuario_valido and equipe_valida:
+            user = form_usuario.save(commit=False)
+            nova_senha=form_usuario.cleaned_data['password']
+            if nova_senha:
+                user.set_password(nova_senha)
+            user.save()
+
+            equipe = form_equipe.save(commit=False)
+            equipe.Usuario = user
+            equipe.save()
+
+            # print("Redirecionando para tabela_equipe")
+            return redirect('posvendasapp:tabela_equipe')
+
+        return render(request, self.template_name, {
+            'form_usuario': form_usuario,
+            'form_equipe': form_equipe,
+            'modo':'edição'
+        })
+
 
 
 def teste_tabelaEquipe(request):
