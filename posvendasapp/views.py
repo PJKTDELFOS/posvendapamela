@@ -1,3 +1,4 @@
+from posvendasapp.services.Services import Main_services
 from django.shortcuts import render
 from django.shortcuts import HttpResponse
 from django.contrib.auth.decorators import login_required
@@ -27,6 +28,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from.models import *
 from .forms import *
+from.vendasforms import *
+
 
 # Create your views here.
 
@@ -55,52 +58,30 @@ def testelogin(request):
 class CadastrarEquipe(View):
     template_name = 'posvendasapp/cadastro_att_equipe.html'
     def get(self, request, *args, **kwargs):
-        form_usuario=UsuarioForm()
-        form_equipe=EquipeForm()
-            #aqui passa o contexto para os 2 formularios
         return render(request, self.template_name,{
-            'form_usuario':form_usuario,
-            'form_equipe':form_equipe,
+            'form_usuario':UsuarioForm(),
+            'form_equipe':EquipeForm(),
             'modo': 'criação'
         })
 
     def post(self, request, *args, **kwargs):
         form_usuario = UsuarioForm(request.POST,Usuario=None)
         form_equipe = EquipeForm(request.POST)
-
-        print("POST recebido:", request.POST)
-
-        usuario_valido = form_usuario.is_valid()
-        equipe_valida = form_equipe.is_valid()
-
-        # if not usuario_valido:
-        #     print('esta com algum erro no usuario')
-        #     print('Erros Usuário:', form_usuario.errors.as_data())
-        #
-        # if not equipe_valida:
-        #     print('esta com algum erro na equipe')
-        #     print('Erros Equipe:', form_equipe.errors.as_json())
-
-        if usuario_valido and equipe_valida:
-            user = form_usuario.save(commit=False)
-            user.set_password(form_usuario.cleaned_data['password'])
-            user.save()
-
-            equipe = form_equipe.save(commit=False)
-            equipe.Usuario = user
-            equipe.save()
-
-            # print("Redirecionando para tabela_equipe")
+        try:
+            Main_services.criar_equipe(request.POST,request.POST)
             return redirect('posvendasapp:tabela_equipe')
+        except ValidationError as e:
+            errors=e.message_dict
+            form_usuario.is_valid()
+            form_equipe.is_valid()
+            return render(request, self.template_name, {
+                'form_usuario': form_usuario,
+                'form_equipe': form_equipe,
+                'modo':'criação',
+                'errors':errors,})
 
-        return render(request, self.template_name, {
-            'form_usuario': form_usuario,
-            'form_equipe': form_equipe,
-            'modo':'criação'
-        })
 
-
-class Atualizar_membro_Equipe(View):
+class Atualizar_membro_Equipe(LoginRequiredMixin,View):
     template_name = 'posvendasapp/cadastro_att_equipe.html'
     def get(self, request, equipe_id):
         equipe=get_object_or_404(Equipe,id=equipe_id)
@@ -111,50 +92,92 @@ class Atualizar_membro_Equipe(View):
         return render(request, self.template_name,{
             'form_usuario':form_usuario,
             'form_equipe':form_equipe,
-            'modo': 'edição'
-        })
+            'modo': 'edição'})
 
     def post(self, request, equipe_id):
         equipe = get_object_or_404(Equipe, id=equipe_id)
         usuario = equipe.Usuario
-        form_usuario = UsuarioForm(request.POST,instance=usuario, Usuario=usuario)
-        form_equipe = EquipeForm(request.POST,instance=equipe)
+        form_usuario = UsuarioForm(request.POST, instance=usuario, Usuario=usuario)
+        form_equipe = EquipeForm(request.POST, instance=equipe)
 
-
-
-        usuario_valido = form_usuario.is_valid()
-        equipe_valida = form_equipe.is_valid()
-
-        # if not usuario_valido:
-        #     print('esta com algum erro no usuario')
-        #     print('Erros Usuário:', form_usuario.errors.as_data())
-        #
-        # if not equipe_valida:
-        #     print('esta com algum erro na equipe')
-        #     print('Erros Equipe:', form_equipe.errors.as_json())
-
-        if usuario_valido and equipe_valida:
-            user = form_usuario.save(commit=False)
-            nova_senha=form_usuario.cleaned_data['password']
-            if nova_senha:
-                user.set_password(nova_senha)
-            user.save()
-
-            equipe = form_equipe.save(commit=False)
-            equipe.Usuario = user
-            equipe.save()
-
-            # print("Redirecionando para tabela_equipe")
+        try:
+            Main_services.Azualizar_Equipe(request.POST,request.POST,usuario,equipe)
             return redirect('posvendasapp:tabela_equipe')
+        except ValidationError as e:
+            errors=e.message_dict
+            form_usuario.is_valid()
+            form_equipe.is_valid()
+            return render(request, self.template_name, {
+                'form_usuario': form_usuario,
+                'form_equipe':  form_equipe,
+                'modo':'edição',
+                'errors':errors,})
 
-        return render(request, self.template_name, {
-            'form_usuario': form_usuario,
-            'form_equipe': form_equipe,
-            'modo':'edição'
+
+
+class DeleteEquipe(LoginRequiredMixin,DeleteView):
+    model = Equipe
+    success_url = reverse_lazy('posvendasapp:tabela_equipe')
+    pk_url_kwarg = 'equipe_id'
+
+    def post(self, request, *args, **kwargs):
+        messages.success(self.request, 'pagamento deletado com sucesso!')
+        return super().post(request, *args, **kwargs)
+
+
+class Cadastrar_Cliente(LoginRequiredMixin,View):
+    template_name = 'posvendasapp/cadastro_att_cliente.html'
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name,{
+            'cliente_form':Clienteforms(),
+            'modo':'criação'
         })
 
+    def post(self, request, *args, **kwargs):
+        form_cliente=Clienteforms(request.POST,request.FILES)
+        try:
+            Main_services.cadastrar_cliente(form_cliente)
+            return redirect('posvendasapp:tabela_cliente')
+        except ValidationError :
+            print(form_cliente.errors)
+            return render(request, self.template_name, {
+                'cliente_form': form_cliente,
+                'modo':'criação'
+            })
 
+class Atualizar_Cliente(LoginRequiredMixin,View):
+    template_name = 'posvendasapp/cadastro_att_cliente.html'
+    def get(self, request, *args, **kwargs):
+        cliente=get_object_or_404(Clientes,pk=self.kwargs['pk'])
+        form_cliente=Clienteforms(instance=cliente)
+        return render(request, self.template_name,{
+            'cliente_form':form_cliente,
+            'modo':'edição'
+
+        })
+    def post(self, request, *args, **kwargs):
+        cliente = get_object_or_404(Clientes, pk=self.kwargs['pk'])
+        form_cliente = Clienteforms( request.POST, request.FILES,instance=cliente)
+        try:
+            Main_services.atualizar_clientes(form_cliente)
+            return redirect('posvendasapp:tabela_cliente')
+        except ValidationError :
+            print(form_cliente.errors)
+            return render(request, self.template_name, {
+                'cliente_form': form_cliente,
+                'modo': 'edição'
+
+            })
+
+
+#fazer o att cliente, delete cliente
 
 def teste_tabelaEquipe(request):
     print('Vai redirecionar para tabela_equipe')
     return render(request, 'posvendasapp/tabela_equipe.html')
+
+
+def teste_tabela_cliente(request):
+    print('Vai redirecionar para tabela_cliente')
+    return render(request, 'posvendasapp/tabela_clientes.html')

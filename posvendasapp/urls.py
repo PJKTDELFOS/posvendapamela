@@ -24,21 +24,31 @@ from .import views
 app_name = 'posvendasapp'
 
 urlpatterns = [
-    path('', views.Login.as_view(), name='login_sistema'),
-
+    path('login', views.Login.as_view(), name='login_sistema'),
     path('logout', views.Logout.as_view(),name='logout'),
-    path('menuinicial/', views.testelogin, name='menuinicial'),
-
-    path('cadastrar_equipe', views.CadastrarEquipe.as_view(), name='cadastrar_equipe'),
+     path('', views.testelogin, name='menuinicial'),
 
 
-
-    # path('',views.posvendasteste,name='posvendasapp'),
-
+    #tabelas
     path('tabela_equipe', views.teste_tabelaEquipe, name='tabela_equipe'),
+    path('tabela_cliente', views.teste_tabela_cliente, name='tabela_cliente'),
+
+    #cadastro
+    path('cadastrar_equipe', views.CadastrarEquipe.as_view(), name='cadastrar_equipe'),
+    path('cadastrar_cliente', views.Cadastrar_Cliente.as_view(), name='cadastrar_cliente'),
 
 
 
+
+    #atualização
+
+
+
+    #deletar
+
+
+
+    #visualizar registros individuais
 
 ]
 if settings.DEBUG:

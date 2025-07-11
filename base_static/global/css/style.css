@@ -1,3 +1,4 @@
+/* Reset e normalização */
 *,
 *::before,
 *::after {
@@ -32,97 +33,137 @@ ul, ol {
   list-style: none;
 }
 
-
+/* Fundo da página */
 body {
-      background-image: url("../../imagens/plano_de_fundo_oculos_1.png");
-      font-family: Arial, sans-serif;
-      color: #333;
-      margin: 0;
-      padding: 0;
-      height: 100vh;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-size: cover;
-    }
+  background-image: url("../../imagens/plano_de_fundo_oculos_1.png");
+  font-family: Arial, sans-serif;
+  color: #333;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
 
+/* Título da navbar */
 .navbar-title {
   color: white;
   font-weight: bold;
   font-size: 18px;
-  margin-right: 20px;; /* espaço entre o título e os links */
+  margin-right: 20px;
 }
 
+/* Primeira linha do body sem margem */
 body > p:first-child {
   margin-top: 0 !important;
 }
 
-
-    .navbar {
-      background-color: #0d6efd;
-      padding: 15px 30px;
-
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: background-color 0.6s ease-in-out;
-    }
-
-    .navbar:hover {
-      background-color: #ffc107; /* amarelo ao passar o mouse */
-    }
-
-    .navbar a {
-      color: white;
-      text-decoration: none;
-      margin-right: 20px;
-      font-weight: bold;
-      position: relative;
-      transition: color 0.4s ease;
-    }
-
-    .navbar:hover a {
-      color: #000; /* links ficam pretos com fundo amarelo */
-    }
-
-    .navbar a:hover {
-      text-decoration: underline;
-    }
-
-    /* Container do dropdown */
-    .dropdown {
-      position: relative;
-      display: inline-block;
-    }
-
-    /* Menu suspenso */
-    .dropdown-content {
-      display: none;
-      position: absolute;
-      background-color: white;
-      min-width: 160px;
-      box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
-      z-index: 1;
-      border-radius: 5px;
-      transition: all 0.3s ease;
-    }
-
-    .dropdown-content a {
-      color: #333;
-      padding: 10px 25px;
-      text-decoration: none;
-      display: block;
-      font-weight: normal;
-      transition: background 0.3s ease;
-    }
-
-    .dropdown-content a:hover {
-      background-color: #f1f1f1;
-    }
-
-    .dropdown:hover .dropdown-content {
-      display: block;
-    }
-
-.search{
-
+/* Navbar principal */
+.navbar {
+  background-color: #0d6efd;
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.6s ease-in-out;
+  font-size: large;
 }
+
+.navbar:hover {
+  background-color: #ffc107;
+}
+
+.navbar a {
+  color: white;
+  margin-right: 20px;
+  font-weight: bold;
+  position: relative;
+  transition: color 0.4s ease;
+}
+
+.navbar:hover a {
+  color: #000;
+}
+
+.navbar a:hover {
+  text-decoration: underline;
+}
+
+/* Container do dropdown */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Menu suspenso de primeiro nível */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: white;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+  z-index: 1000;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+.dropdown-content a {
+  color: #333;
+  padding: 10px 25px;
+  display: block;
+  font-weight: normal;
+  transition: background 0.3s ease;
+}
+
+.dropdown-content a:hover {
+  background-color: #f1f1f1;
+}
+
+/* Mostrar dropdown ao passar o mouse */
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* Submenu lateral */
+.dropdown-sub {
+  position: relative;
+}
+
+.dropdown-sub-content {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 100%;
+  background-color: white;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+  z-index: 1001;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+.dropdown-sub:hover .dropdown-sub-content {
+  display: block;
+}
+
+.dropdown-sub-content a {
+  color: #333;
+  padding: 10px 20px;
+  display: block;
+  font-weight: normal;
+  transition: background 0.3s ease;
+}
+
+.dropdown-sub-content a:hover {
+  background-color: #eaeaea;
+}
+
+/* Estilo para barra de busca (se for usar depois) */
+.search {
+  /* estilo da busca */
+}
+
+

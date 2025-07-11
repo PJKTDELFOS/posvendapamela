@@ -1,0 +1,28 @@
+{% extends "global/base.html" %}
+{% load crispy_forms_tags %}
+
+
+{%block content %}
+    <h2>
+    {% if modo == 'edição' %}
+    <P>Edição de  Cliente</P>
+    {% elif modo == 'criação'  %}
+    <P>Cadastro de  Cliente</P>
+    {% endif %}
+    </h2>
+
+    <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ cliente_form.as_p }}
+
+
+    <button type="submit">
+    {% if modo == 'edição' %}
+        Edição de  Cliente
+    {% elif modo == 'criação' %}
+        Cadastro de  Cliente
+    {% endif %}
+    </button>
+</form>
+
+{% endblock %}

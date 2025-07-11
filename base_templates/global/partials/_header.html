@@ -1,44 +1,59 @@
 {% if user.is_authenticated %}
-    <div class="navbar">
-        <div style="display: flex; align-items: center; gap: 20px;">
-            <p class="navbar-title">YOSSEF POSVENDAS</p>
-<!-- aumentar botoes -->
-            <a href="#">Início</a>
-
-            <div class="dropdown">
-                <a href="#">Posvendas ▾</a>
-                <div class="dropdown-content">
-                    <a href="#">Clientes</a>
-                    <a href="#">Vendas</a>
-                    <a href="#">Produtos</a>
-                    <a href="#">Ocorrencias</a>
-                </div>
-            </div>
-
-            <div class="dropdown"><!-- aqui fazer opçoes somente para gerencia em diante -->
-                <a href="#">Equipe ▾</a>
-                <div class="dropdown-content">
-                    <a href="#">Atualizar cadastro</a>
-                    <a href="#">ver o que fazer aqui</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- search + logout separados na direita -->
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <div class="search-bar">
-                <form action="#" method="get" style="display: flex; gap: 5px;">
-                    <input type="text" name="q" placeholder="Buscar..." required style="padding: 5px; width: 200px;">
-                    <button type="submit">🔍</button>
-                </form>
-            </div>
-            <a href="{% url 'posvendasapp:logout' %}">Logout</a>
-        </div>
-    </div>
-{% else %}
-    <div class="navbar">
+<div class="navbar">
+    <!-- Parte esquerda da navbar -->
+    <div style="display: flex; align-items: center; gap: 20px;">
         <p class="navbar-title">YOSSEF POSVENDAS</p>
-        <a href="{% url 'posvendasapp:cadastrar_equipe' %}">Registrar </a>
-        <a href="#">Esqueceu sua senha</a>
+
+        <!-- Botão Início -->
+         <a href="{% url 'admin:index' %}" class="menu-link" target="_blank"><b>ADMIN</b></a>
+
+        <!-- Dropdown Pós-vendas com submenu lateral em Clientes -->
+        <div class="dropdown">
+            <a href="#" style="padding: 10px 20px; font-size: 16px;">Posvendas ▾</a>
+            <ul class="dropdown-content">
+                <li class="dropdown-sub">
+                    <a href="{% url 'posvendasapp:tabela_cliente' %}">Clientes ▸</a>
+                    <ul class="dropdown-sub-content">
+                        <li><a href="{% url 'posvendasapp:cadastrar_cliente' %}">Cadastrar</a></li>
+                        <li><a href="#">Atualizar</a></li>
+                        <li><a href="#">Excluir</a></li>
+                    </ul>
+                </li>
+                <li><a href="#">Vendas</a></li>
+                <li><a href="#">Produtos</a></li>
+                <li><a href="#">Ocorrencias</a></li>
+            </ul>
+        </div>
+
+        <!-- Dropdown Equipe (acesso gerência em diante) -->
+        <div class="dropdown">
+            <a href="#" style="padding: 10px 20px; font-size: 16px;">Equipe ▾</a>
+            <ul class="dropdown-content">
+                <li><a href="#">Atualizar cadastro</a></li>
+                <li><a href="#">ver o que fazer aqui</a></li>
+            </ul>
+        </div>
     </div>
+
+    <!-- Parte direita da navbar: busca + logout -->
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <div class="search-bar">
+            <form action="#" method="get" style="display: flex; gap: 5px;">
+                <input type="text" name="q" placeholder="Buscar..." required style="padding: 8px; width: 200px; border-radius: 4px; border: none;">
+                <button type="submit" style="padding: 8px 12px; background: #fff; border: none; border-radius: 4px; cursor: pointer;">🔍</button>
+            </form>
+        </div>
+        <a href="{% url 'posvendasapp:logout' %}" style="padding: 10px 20px; font-size: 16px;">Logout</a>
+    </div>
+</div>
+
+{% else %}
+<!-- Caso não autenticado -->
+<div class="navbar">
+    <p class="navbar-title">YOSSEF POSVENDAS</p>
+    <a href="{% url 'posvendasapp:cadastrar_equipe' %}" style="padding: 10px 20px; font-size: 16px;">Registrar</a>
+    <a href="#" style="padding: 10px 20px; font-size: 16px;">Esqueceu sua senha</a>
+    <a href="{% url 'admin:index' %}}" style="padding: 10px 20px; font-size: 16px;">ADMIN</a>
+</div>
+
 {% endif %}
