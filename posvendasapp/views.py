@@ -52,7 +52,7 @@ class Logout(LoginRequiredMixin,View):
         return redirect('posvendasapp:login_sistema')
 @login_required
 def testelogin(request):
-    return render(request, 'posvendasapp/vendas.html')
+    return render(request, 'posvendasapp/tabela_vendas.html')
 
 
 class CadastrarEquipe(View):
@@ -171,7 +171,60 @@ class Atualizar_Cliente(LoginRequiredMixin,View):
             })
 
 
-#fazer o att cliente, delete cliente
+class DeleteCliente(LoginRequiredMixin,DeleteView):
+    model = Clientes
+    success_url = reverse_lazy('posvendasapp:tabela_cliente')
+    pk_url_kwarg = 'cliente_id'
+
+    def post(self, request, *args, **kwargs):
+        messages.success(self.request, 'Cliente deletado com sucesso!')
+        return super().post(request, *args, **kwargs)
+
+
+class Cadastrar_Vendas(LoginRequiredMixin,View):
+    template_name = 'posvendasapp/cadastrar_att_vendas.html'
+
+    def get(self, request, *args, **kwargs):
+        cliente=Clientes.objects.get(pk=self.kwargs['pk'])
+        vendedor=request.user.equipe
+        form_vendas=Vendaforms(cliente=cliente,vendedor=vendedor)
+        produto_formset=ProdutoFormSet
+        ocorrencia_formset=OcorrenciaFormSet(request=request)
+
+        return render(request, self.template_name,{
+            'form_vendas': form_vendas,
+            'form_produto_formset': produto_formset,
+            'ocorrencia_formset': ocorrencia_formset,
+            'modo':'criação'
+        })
+
+    def post(self, request, *args, **kwargs):
+        cliente = Clientes.objects.get(pk=self.kwargs['pk'])
+        vendedor = request.user.equipe
+
+        try:
+            Main_services.cadastrar_venda(
+                dados_venda=request.POST,
+                dados_produto=request.POST,
+                dados_ocorrencia=request.POST,
+                cliente=cliente,
+                vendedor=vendedor,
+                request=request
+
+            )
+            return redirect('posvendasapp:tabela_cliente')#fazer a url para vendas correta
+        except ValidationError as e:
+            form_venda = Vendaforms(request.POST, cliente=cliente, vendedor=vendedor)
+            formset_produto = ProdutoFormSet(request.POST)
+            formset_ocorrencia = OcorrenciaFormSet(request.POST, request=request)
+
+            return render(request, self.template_name, {
+                'form_venda': form_venda,
+                'formset_produto': formset_produto,
+                'formset_ocorrencia': formset_ocorrencia,
+                'errors': e,
+            })
+
 
 def teste_tabelaEquipe(request):
     print('Vai redirecionar para tabela_equipe')
