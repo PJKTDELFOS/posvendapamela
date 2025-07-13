@@ -1,35 +1,17 @@
 from posvendasapp.services.Services import Main_services
-from django.shortcuts import render
-from django.shortcuts import HttpResponse
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth import  logout
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
-from django.urls import reverse_lazy
-from django.contrib.auth import authenticate, login, logout
-from django.shortcuts import get_object_or_404,redirect,render,HttpResponse
-from django.views.generic.list import ListView,View
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.views import LoginView,LogoutView
-from django.views.generic.list import ListView,View
-from django.views.generic.detail import DetailView
-from django.shortcuts import get_object_or_404,redirect,render,HttpResponse
-from . import models
-from . import forms
-from django.views.generic.edit import CreateView,UpdateView,DeleteView
-from django.db.models import Q
-import os
-from django.conf import settings
+from django.views.generic.list import View
+from django.shortcuts import redirect,render
+from django.views.generic.edit import DeleteView
 import shutil
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
-from django.views.generic import CreateView
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import authenticate, login
-from.models import *
 from .forms import *
 from.vendasforms import *
-
 
 # Create your views here.
 
@@ -188,7 +170,7 @@ class Cadastrar_Vendas(LoginRequiredMixin,View):
         cliente=Clientes.objects.get(pk=self.kwargs['pk'])
         vendedor=request.user.equipe
         form_vendas=Vendaforms(cliente=cliente,vendedor=vendedor)
-        produto_formset=ProdutoFormSet
+        produto_formset=ProdutoFormSet()
         ocorrencia_formset=OcorrenciaFormSet(request=request)
 
         return render(request, self.template_name,{
@@ -198,7 +180,7 @@ class Cadastrar_Vendas(LoginRequiredMixin,View):
             'modo':'criação'
         })
 
-    def post(self, request, *args, **kwargs):
+    def post(self,request, *args, **kwargs):
         cliente = Clientes.objects.get(pk=self.kwargs['pk'])
         vendedor = request.user.equipe
 
@@ -223,7 +205,54 @@ class Cadastrar_Vendas(LoginRequiredMixin,View):
                 'formset_produto': formset_produto,
                 'formset_ocorrencia': formset_ocorrencia,
                 'errors': e,
+                'modo': 'criação'
             })
+
+class Atualizar_Vendas(LoginRequiredMixin,View):
+    template_name = 'posvendasapp/cadastrar_att_vendas.html'
+    def get(self, request, *args, **kwargs):
+        venda=get_object_or_404(Vendas, pk=self.kwargs['pk'])
+        cliente=venda.cliente
+        vendedor=venda.vendedor
+
+        form_venda=Vendaforms(instance=venda,cliente=cliente, vendedor=vendedor)
+        form_produto=ProdutoFormSet(instance=venda)
+        form_ocorrencia=OcorrenciaFormSet(instance=venda,request=request)
+
+        return render(request, self.template_name,{
+            'form_venda': form_venda,
+            'form_produto': form_produto,
+            'form_ocorrencia': form_ocorrencia,
+            'modo':'edição'
+        })
+    def post(self,request, *args, **kwargs):
+        venda = get_object_or_404(Vendas, pk=self.kwargs['pk'])
+        cliente = venda.cliente
+        vendedor = venda.vendedor
+
+        try:
+            Main_services.atualizar_venda(
+                dados_venda=request.POST,
+                dados_produto=request.POST,
+                dados_ocorrencia=request.POST,
+                venda=venda,
+                cliente=cliente,
+                vendedor=vendedor,
+                request=request
+            )
+        except ValidationError as e:
+            form_venda = Vendaforms(request.POST,instance=venda, cliente=cliente, vendedor=vendedor)
+            form_produto = ProdutoFormSet(request.POST,instance=venda)
+            form_ocorrencia = OcorrenciaFormSet(request.POST,instance=venda,request=request)
+
+            return render(request, self.template_name, {
+                'form_venda': form_venda,
+                'form_produto': form_produto,
+                'form_ocorrencia': form_ocorrencia,
+                'errors': e,
+                'modo':'edição'
+            })
+
 
 
 def teste_tabelaEquipe(request):

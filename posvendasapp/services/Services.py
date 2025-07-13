@@ -1,7 +1,6 @@
 from posvendasapp.forms import EquipeForm,UsuarioForm
 from posvendasapp.vendasforms import *
 from django.core.exceptions import ValidationError
-from posvendasapp.models import *
 from django.db import transaction
 
 
@@ -92,6 +91,33 @@ class Main_services:
 
 
         return venda
+    @staticmethod
+    def atualizar_venda(dados_venda,dados_produto,dados_ocorrencia,venda,cliente,vendedor,request=None):
+        vendas_form=Vendaforms(dados_venda,instance=venda,cliente=cliente,vendedor=vendedor)
+        produto_formset=ProdutoFormSet(dados_produto,instance=venda)
+        ocorrencia_formset=OcorrenciaFormSet(dados_ocorrencia,instance=venda,request=request)
+        if not vendas_form.is_valid():
+            raise ValidationError({'form':vendas_form.errors})
+        if not produto_formset:
+            raise ValidationError({'form':produto_formset.errors})
+        if not ocorrencia_formset:
+            raise ValidationError({'form':ocorrencia_formset.errors})
+
+        with transaction.atomic():
+            venda=vendas_form.save(commit=False)
+            venda.cliente=cliente
+            venda.vendedor=vendedor
+            venda.save()
+            produto_formset.save()
+            ocorrencia_formset.save()
+
+        return venda
+
+
+
+
+
+
 
 
 

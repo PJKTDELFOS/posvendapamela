@@ -11,23 +11,28 @@
     </h2>
 
     <form method="post">
-        {% csrf_token %}
+    {% csrf_token %}
 
-        <h3>Venda</h3>
-        {{ form_venda.as_p }}
+    <h3>Venda</h3>
 
-        <h3>Produtos</h3>
-        {{ formset_produto.management_form }}
-        {% for form in formset_produto %}
-            {{ form.as_p }}
-        {% endfor %}
+    <p><strong>Cliente:</strong> {{ form_venda.cliente_db.value }}</p>
+    <p><strong>Vendedor:</strong> {{ form_venda.vendedor_db.value }}</p>
 
-        <h3>Ocorrências (opcional)</h3>
-        {{ formset_ocorrencia.management_form }}
-        {% for form in formset_ocorrencia %}
-            {{ form.as_p }}
-        {% endfor %}
+    {{ form_venda|crispy }}
 
-        <button type="submit" class="btn btn-primary mt-3">Salvar</button>
-    </form>
+    <h3>Produtos</h3>
+    {{ formset_produto.management_form }}
+    {% for form in formset_produto %}
+        {{ form|crispy }}
+    {% endfor %}
+
+    <h3>Ocorrências (opcional)</h3>
+    {{ formset_ocorrencia.management_form }}
+    {% for form in formset_ocorrencia %}
+        {{ form|crispy }}
+    {% endfor %}
+
+    <button type="submit" class="btn btn-primary mt-3">Salvar</button>
+</form>
+
 {% endblock %}
