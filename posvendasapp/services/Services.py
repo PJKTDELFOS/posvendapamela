@@ -75,18 +75,20 @@ class Main_services:
         venda = vendas_form.save(commit=False)
         venda.cliente = cliente
         venda.vendedor = vendedor
+        venda.save()  # Precisa salvar antes de usar como instance nos formsets
 
-        produto_formset = ProdutoFormSet(data=dados_produto, instance=venda)
-        ocorrencia_formset = OcorrenciaFormSet(data=dados_ocorrencia, instance=venda)
-        ocorrencia_formset.request = request  # atribui request aqui, não no construtor
+        produto_formset = ProdutoFormSet(data=dados_produto, instance=venda, prefix='produtos')
+        ocorrencia_formset = OcorrenciaFormSet(data=dados_ocorrencia, instance=venda, prefix='ocorrencias')
+        ocorrencia_formset.request = request  # ✅ Corrigido aqui
 
         if not produto_formset.is_valid():
+            print("Erros no formset de produtos:", produto_formset.errors)
             raise ValidationError({'form': produto_formset.errors})
+
         if not ocorrencia_formset.is_valid():
             raise ValidationError({'form': ocorrencia_formset.errors})
 
         with transaction.atomic():
-            venda.save()
             produto_formset.save()
             ocorrencia_formset.save()
 
@@ -99,9 +101,9 @@ class Main_services:
         ocorrencia_formset=OcorrenciaFormSet(dados_ocorrencia,instance=venda,request=request)
         if not vendas_form.is_valid():
             raise ValidationError({'form':vendas_form.errors})
-        if not produto_formset:
+        if not produto_formset.is_valid():
             raise ValidationError({'form':produto_formset.errors})
-        if not ocorrencia_formset:
+        if not ocorrencia_formset.is_valid():
             raise ValidationError({'form':ocorrencia_formset.errors})
 
         with transaction.atomic():

@@ -92,24 +92,33 @@ class OcorrenciaForm(forms.ModelForm):
 class ProdutoFormSetCustom(BaseInlineFormSet):
     def clean(self):
         super().clean()
-        produtos_na_venda=0
+        produtos_na_venda = 0
 
-        for form in self.forms:
-            if form.cleaned_data and not form.cleaned_data.get('DELETE',False):
-                produtos_na_venda+=1
+        for i, form in enumerate(self.forms):
+            if form.cleaned_data and not form.cleaned_data.get('DELETE', False):
+                produtos_na_venda += 1
 
-                valor=form.cleaned_data.get('Valor_venda')
+                valor = form.cleaned_data.get('Valor_venda')
+                print(f"[DEBUG] Produto {i}: Valor_venda = {valor}")
 
-                if valor is not None and valor <=0:
-                    form.add_error('Valor_venda','O valor do produto deve ser maior que zero')
-        if produtos_na_venda==0:
-            raise forms.ValidationError('Deve haver um produto vendido')
+                if valor is not None and valor <= 0:
+                    form.add_error('Valor_venda', 'O valor do produto deve ser maior que zero')
+
+        if produtos_na_venda == 0:
+            raise forms.ValidationError('Deve haver pelo menos um produto vendido')
+
+    def save_new(self, form, commit=True):
+        obj = super().save_new(form, commit=False)
+        obj.venda = self.instance
+        obj.save()
+        return obj
+
 
 
 class OcorrenciaInlineFormSet(BaseInlineFormSet):
     def get_form_kwargs(self, index):
         kwargs = super().get_form_kwargs(index)
-        kwargs['request'] = self.request  # Isso agora será passado para o form!
+        kwargs['request'] = self.request
         return kwargs
 
     def save_new(self, form, commit=True):

@@ -3,6 +3,8 @@ extender base.html nos templates do app
 carregar os blocks conforme a necessidade
 incluir no base as partes como head ou header
 incluir segurança maxima no sistema
+nao passar request direto no inline_formset
+usar oum script jaba para add  botoes
 
 
 

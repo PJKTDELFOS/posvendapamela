@@ -166,7 +166,7 @@ class DeleteCliente(LoginRequiredMixin,DeleteView):
         return super().post(request, *args, **kwargs)
 
 
-class Cadastrar_Vendas(LoginRequiredMixin,View):
+class Cadastrar_Vendas(LoginRequiredMixin, View):
     template_name = 'posvendasapp/cadastro_vendas.html'
 
     def get(self, request, *args, **kwargs):
@@ -175,13 +175,13 @@ class Cadastrar_Vendas(LoginRequiredMixin,View):
         venda_fake = Vendas(cliente=cliente, vendedor=vendedor)
 
         form_venda = Vendaforms(cliente=cliente, vendedor=vendedor)
-        produto_formset = ProdutoFormSet(instance=venda_fake)
-        ocorrencia_formset = OcorrenciaFormSet(instance=venda_fake)
-        ocorrencia_formset.request = request  # Setando aqui o request
+        form_produto_formset = ProdutoFormSet(instance=venda_fake, prefix='produtos')
+        ocorrencia_formset = OcorrenciaFormSet(instance=venda_fake, prefix='ocorrencias')
+        ocorrencia_formset.request = request  # request nao passa para  formset de forma direta
 
         return render(request, self.template_name, {
             'form_venda': form_venda,
-            'form_produto_formset': produto_formset,
+            'form_produto_formset': form_produto_formset,
             'ocorrencia_formset': ocorrencia_formset,
             'modo': 'criação'
         })
@@ -192,9 +192,9 @@ class Cadastrar_Vendas(LoginRequiredMixin,View):
         venda_fake = Vendas(cliente=cliente, vendedor=vendedor)
 
         form_venda = Vendaforms(request.POST, cliente=cliente, vendedor=vendedor)
-        produto_formset = ProdutoFormSet(request.POST, instance=venda_fake)
-        ocorrencia_formset = OcorrenciaFormSet(request.POST, instance=venda_fake)
-        ocorrencia_formset.request = request  # Setando aqui o request
+        form_produto_formset = ProdutoFormSet(request.POST, instance=venda_fake, prefix='produtos')
+        ocorrencia_formset = OcorrenciaFormSet(request.POST, instance=venda_fake, prefix='ocorrencias')
+        ocorrencia_formset.request = request  # ✅ Correto
 
         try:
             Main_services.cadastrar_venda(
@@ -209,30 +209,33 @@ class Cadastrar_Vendas(LoginRequiredMixin,View):
         except ValidationError as e:
             return render(request, self.template_name, {
                 'form_venda': form_venda,
-                'form_produto_formset': produto_formset,
+                'form_produto_formset': form_produto_formset,
                 'ocorrencia_formset': ocorrencia_formset,
                 'errors': e,
                 'modo': 'criação'
             })
 
-class Atualizar_Vendas(LoginRequiredMixin,View):
+class Atualizar_Vendas(LoginRequiredMixin, View):
     template_name = 'posvendasapp/cadastro_vendas.html'
+
     def get(self, request, *args, **kwargs):
-        venda=get_object_or_404(Vendas, pk=self.kwargs['pk'])
-        cliente=venda.cliente
-        vendedor=venda.vendedor
+        venda = get_object_or_404(Vendas, pk=self.kwargs['pk'])
+        cliente = venda.cliente
+        vendedor = venda.vendedor
 
-        form_venda=Vendaforms(instance=venda,cliente=cliente, vendedor=vendedor)
-        form_produto=ProdutoFormSet(instance=venda)
-        form_ocorrencia=OcorrenciaFormSet(instance=venda,request=request)
+        form_venda = Vendaforms(instance=venda, cliente=cliente, vendedor=vendedor)
+        produto_formset = ProdutoFormSet(instance=venda)
+        ocorrencia_formset = OcorrenciaFormSet(instance=venda)
+        ocorrencia_formset.request = request  # ✅ necessário
 
-        return render(request, self.template_name,{
+        return render(request, self.template_name, {
             'form_venda': form_venda,
-            'form_produto': form_produto,
-            'form_ocorrencia': form_ocorrencia,
-            'modo':'edição'
+            'form_produto_formset': produto_formset,
+            'ocorrencia_formset': ocorrencia_formset,
+            'modo': 'edição'
         })
-    def post(self,request, *args, **kwargs):
+
+    def post(self, request, *args, **kwargs):
         venda = get_object_or_404(Vendas, pk=self.kwargs['pk'])
         cliente = venda.cliente
         vendedor = venda.vendedor
@@ -247,19 +250,20 @@ class Atualizar_Vendas(LoginRequiredMixin,View):
                 vendedor=vendedor,
                 request=request
             )
+            return redirect('posvendasapp:tabela_cliente')
         except ValidationError as e:
-            form_venda = Vendaforms(request.POST,instance=venda, cliente=cliente, vendedor=vendedor)
-            form_produto = ProdutoFormSet(request.POST,instance=venda)
-            form_ocorrencia = OcorrenciaFormSet(request.POST,instance=venda,request=request)
+            form_venda = Vendaforms(request.POST, instance=venda, cliente=cliente, vendedor=vendedor)
+            produto_formset = ProdutoFormSet(request.POST, instance=venda)
+            ocorrencia_formset = OcorrenciaFormSet(request.POST, instance=venda)
+            ocorrencia_formset.request = request
 
             return render(request, self.template_name, {
                 'form_venda': form_venda,
-                'form_produto': form_produto,
-                'form_ocorrencia': form_ocorrencia,
+                'form_produto_formset': produto_formset,
+                'ocorrencia_formset': ocorrencia_formset,
                 'errors': e,
-                'modo':'edição'
+                'modo': 'edição'
             })
-
 class DeleteVenda(LoginRequiredMixin,DeleteView):
     model = Vendas
     success_url = reverse_lazy('posvendasapp:tabela_vendas')

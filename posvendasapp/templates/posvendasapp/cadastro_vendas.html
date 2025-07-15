@@ -2,74 +2,101 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-<h2>Cadastro de Venda</h2>
+<h2>
+    {% if modo == 'edição' %}
+        EDITAR VENDAS
+    {% elif modo == 'criação' %}
+        CADASTRAR VENDAS
+    {% endif %}
+</h2>
 
-<form method="post">
+<form method="post" novalidate>
     {% csrf_token %}
 
-    <h3>Venda</h3>
+    <h4>Informações da Venda</h4>
+    <div class="form-group">
+        {{ form_venda.cliente_db|as_crispy_field }}
+        {{ form_venda.vendedor_db|as_crispy_field }}
+    </div>
     {{ form_venda|crispy }}
 
-    <h3>Produtos</h3>
-    {{ form_produto_formset.management_form }}
+    <hr>
 
+    <h4>Produtos</h4>
+    {{ form_produto_formset.management_form }}
     <div id="produtos-formset">
         {% for form in form_produto_formset %}
-            <div class="produto-form" style="border: 1px solid #ccc; margin-bottom:10px; padding:10px;">
+            <div class="produto-form border p-3 mb-2 rounded bg-light">
                 {{ form|crispy }}
             </div>
         {% endfor %}
     </div>
+    <button type="button" class="btn btn-secondary my-2" id="add-produto-btn">Adicionar Produto</button>
 
-    <button type="button" id="add-produto-btn" class="btn btn-secondary mb-3">Adicionar Produto</button>
+    <hr>
 
-    <h3>Ocorrências</h3>
+    <h4>Ocorrências</h4>
     {{ ocorrencia_formset.management_form }}
     <div id="ocorrencias-formset">
         {% for form in ocorrencia_formset %}
-            <div class="ocorrencia-form" style="border: 1px solid #ccc; margin-bottom:10px; padding:10px;">
+            <div class="ocorrencia-form border p-3 mb-2 rounded bg-light">
                 {{ form|crispy }}
             </div>
         {% endfor %}
     </div>
 
-    <button type="submit" class="btn btn-primary">Salvar Venda</button>
+    <button type="submit" class="btn btn-primary mt-3">Salvar Venda</button>
 </form>
 
+<!-- Template invisível corrigido para adicionar novos produtos dinamicamente -->
+<div id="empty-produto-form-template" style="display: none;">
+    <div class="produto-form border p-3 mb-2 rounded bg-light">
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="id_produtos-__prefix__-Produto">Produto</label>
+                <input type="text" name="produtos-__prefix__-Produto" class="form-control" id="id_produtos-__prefix__-Produto">
+            </div>
+            <div class="form-group col-md-6">
+                <label for="id_produtos-__prefix__-tipo">Tipo</label>
+                <select name="produtos-__prefix__-tipo" class="form-control" id="id_produtos-__prefix__-tipo">
+                    <option value="">---------</option>
+                    <option value="Contato-diaria">Contato-diaria</option>
+                    <option value="Contato-Quinzenal">Contato-Quinzenal</option>
+                    <option value="Solar">Solar</option>
+                    <option value="Receituario">Receituario</option>
+                    <option value="Multifocal">Multifocal</option>
+                    <option value="Visão simples">Visão simples</option>
+                </select>
+            </div>
+            <div class="form-group col-md-6">
+                <label for="id_produtos-__prefix__-Valor_venda">Valor de venda</label>
+                <input type="number" step="0.01" name="produtos-__prefix__-Valor_venda" class="form-control" id="id_produtos-__prefix__-Valor_venda">
+            </div>
+            <div class="form-group col-md-6">
+                <label for="id_produtos-__prefix__-valor_produto_sem_desconto">Valor original</label>
+                <input type="number" step="0.01" name="produtos-__prefix__-valor_produto_sem_desconto" class="form-control" id="id_produtos-__prefix__-valor_produto_sem_desconto">
+            </div>
+            <!-- campo DELETE opcional se usar can_delete=True -->
+            <input type="checkbox" name="produtos-__prefix__-DELETE" style="display:none;">
+        </div>
+    </div>
+</div>
+
 <script>
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     const addBtn = document.getElementById("add-produto-btn");
     const formsetDiv = document.getElementById("produtos-formset");
-    const totalFormsInput = document.querySelector('input[name="{{ form_produto_formset.prefix }}-TOTAL_FORMS"]');
+    const totalFormsInput = document.querySelector('input[name="produtos-TOTAL_FORMS"]');
+    const emptyFormTemplate = document.getElementById("empty-produto-form-template").innerHTML;
 
-    addBtn.addEventListener("click", function() {
-        // Número atual de formulários
+    addBtn.addEventListener("click", function () {
         const totalForms = parseInt(totalFormsInput.value);
-
-        // Clonar o último formulário
-        const lastForm = formsetDiv.querySelector(".produto-form:last-child");
-        const newForm = lastForm.cloneNode(true);
-
-        // Atualizar os índices dos campos do novo formulário
-        const regex = new RegExp(`(${form_produto_formset.prefix}-\\d+)`, "g");
-        newForm.innerHTML = newForm.innerHTML.replace(regex, `${form_produto_formset.prefix}-${totalForms}`);
-
-        // Limpar valores dos campos do novo formulário
-        newForm.querySelectorAll("input, select, textarea").forEach(input => {
-            if(input.type === "checkbox" || input.type === "radio") {
-                input.checked = false;
-            } else {
-                input.value = "";
-            }
-        });
-
-        // Adicionar o novo formulário ao container
-        formsetDiv.appendChild(newForm);
-
-        // Atualizar o campo TOTAL_FORMS
+        const newFormHtml = emptyFormTemplate.replace(/__prefix__/g, totalForms);
+        formsetDiv.insertAdjacentHTML("beforeend", newFormHtml);
         totalFormsInput.value = totalForms + 1;
     });
 });
 </script>
-
 {% endblock %}
+
+
