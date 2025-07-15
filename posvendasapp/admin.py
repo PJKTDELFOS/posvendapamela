@@ -68,7 +68,7 @@ class EquipeAdmin(admin.ModelAdmin):
 # Admin de Clientes com Vendas Inline
 @admin.register(Clientes)
 class ClientesAdmin(admin.ModelAdmin):
-    list_display = ('Nome', 'contato', 'valor_total_venda_do_cliente_formatada')
+    list_display = ('id','Nome', 'contato', 'valor_total_venda_do_cliente_formatada')
     search_fields = ('Nome', 'contato')
     inlines = [VendasInline]
     readonly_fields = ('valor_total_venda_do_cliente_formatada',)

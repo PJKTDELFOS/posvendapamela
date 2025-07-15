@@ -1,6 +1,7 @@
 from django import forms
 from .models import Vendas,Clientes,Produtos,Ocorrencia
-from django.forms import inlineformset_factory,BaseInlineFormSet
+from django.forms import inlineformset_factory,BaseInlineFormSet,modelformset_factory
+
 
 
 
@@ -63,7 +64,7 @@ class Vendaforms(forms.ModelForm):
 
         # vendedor
         if vendedor_obj:
-            self.fields['vendedor_db'].initial=vendedor_obj.username
+            self.fields['vendedor_db'].initial=vendedor_obj.Usuario.username
             self.instance.vendedor=vendedor_obj
             self.fields['vendedor_db'].label='Vendedor'
         else:
@@ -78,6 +79,15 @@ class Vendaforms(forms.ModelForm):
             self.add_error(None, ' falta vendedor')
         return cleaned_data
 
+
+class OcorrenciaForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super().__init__(*args, **kwargs)
+
+    class Meta:
+        model = Ocorrencia
+        fields = '__all__'
 
 class ProdutoFormSetCustom(BaseInlineFormSet):
     def clean(self):
@@ -97,16 +107,14 @@ class ProdutoFormSetCustom(BaseInlineFormSet):
 
 
 class OcorrenciaInlineFormSet(BaseInlineFormSet):
-    def __init__(self, *args, **kwargs):
-        self.request = kwargs.pop('request', None)
-        super().__init__(*args, **kwargs)
+    def get_form_kwargs(self, index):
+        kwargs = super().get_form_kwargs(index)
+        kwargs['request'] = self.request  # Isso agora será passado para o form!
+        return kwargs
 
     def save_new(self, form, commit=True):
         obj = super().save_new(form, commit=False)
-
-
         obj.venda = self.instance
-
 
         if self.request and hasattr(self.request.user, 'equipe'):
             obj.vendedor = self.request.user.equipe
@@ -115,25 +123,19 @@ class OcorrenciaInlineFormSet(BaseInlineFormSet):
             obj.save()
         return obj
 
-    def get_form_kwargs(self, index):
-        kwargs = super().get_form_kwargs(index)
-        kwargs['request'] = self.request
-        return kwargs
-
 
 ProdutoFormSet = inlineformset_factory(
     Vendas,Produtos,
     fields='__all__',
-    extra=0,can_delete=True,
+    extra=1,can_delete=True,
     formset=ProdutoFormSetCustom,
 )
+
 OcorrenciaFormSet = inlineformset_factory(
-    Vendas,Ocorrencia,
-    fields='__all__',
-    extra=0,can_delete=True,
+    Vendas, Ocorrencia,
+    form=OcorrenciaForm,
     formset=OcorrenciaInlineFormSet,
-
-
+    extra=1, can_delete=True
 )
 
 

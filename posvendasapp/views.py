@@ -12,6 +12,9 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .forms import *
 from.vendasforms import *
+from posvendasapp.services.search_map import mapa_modelos
+from django.http import  HttpResponseBadRequest
+from django.db.models import Q
 
 # Create your views here.
 
@@ -164,25 +167,34 @@ class DeleteCliente(LoginRequiredMixin,DeleteView):
 
 
 class Cadastrar_Vendas(LoginRequiredMixin,View):
-    template_name = 'posvendasapp/cadastrar_att_vendas.html'
+    template_name = 'posvendasapp/cadastro_vendas.html'
 
     def get(self, request, *args, **kwargs):
-        cliente=Clientes.objects.get(pk=self.kwargs['pk'])
-        vendedor=request.user.equipe
-        form_vendas=Vendaforms(cliente=cliente,vendedor=vendedor)
-        produto_formset=ProdutoFormSet()
-        ocorrencia_formset=OcorrenciaFormSet(request=request)
-
-        return render(request, self.template_name,{
-            'form_vendas': form_vendas,
-            'form_produto_formset': produto_formset,
-            'ocorrencia_formset': ocorrencia_formset,
-            'modo':'criação'
-        })
-
-    def post(self,request, *args, **kwargs):
         cliente = Clientes.objects.get(pk=self.kwargs['pk'])
         vendedor = request.user.equipe
+        venda_fake = Vendas(cliente=cliente, vendedor=vendedor)
+
+        form_venda = Vendaforms(cliente=cliente, vendedor=vendedor)
+        produto_formset = ProdutoFormSet(instance=venda_fake)
+        ocorrencia_formset = OcorrenciaFormSet(instance=venda_fake)
+        ocorrencia_formset.request = request  # Setando aqui o request
+
+        return render(request, self.template_name, {
+            'form_venda': form_venda,
+            'form_produto_formset': produto_formset,
+            'ocorrencia_formset': ocorrencia_formset,
+            'modo': 'criação'
+        })
+
+    def post(self, request, *args, **kwargs):
+        cliente = Clientes.objects.get(pk=self.kwargs['pk'])
+        vendedor = request.user.equipe
+        venda_fake = Vendas(cliente=cliente, vendedor=vendedor)
+
+        form_venda = Vendaforms(request.POST, cliente=cliente, vendedor=vendedor)
+        produto_formset = ProdutoFormSet(request.POST, instance=venda_fake)
+        ocorrencia_formset = OcorrenciaFormSet(request.POST, instance=venda_fake)
+        ocorrencia_formset.request = request  # Setando aqui o request
 
         try:
             Main_services.cadastrar_venda(
@@ -192,24 +204,19 @@ class Cadastrar_Vendas(LoginRequiredMixin,View):
                 cliente=cliente,
                 vendedor=vendedor,
                 request=request
-
             )
-            return redirect('posvendasapp:tabela_cliente')#fazer a url para vendas correta
+            return redirect('posvendasapp:tabela_cliente')
         except ValidationError as e:
-            form_venda = Vendaforms(request.POST, cliente=cliente, vendedor=vendedor)
-            formset_produto = ProdutoFormSet(request.POST)
-            formset_ocorrencia = OcorrenciaFormSet(request.POST, request=request)
-
             return render(request, self.template_name, {
                 'form_venda': form_venda,
-                'formset_produto': formset_produto,
-                'formset_ocorrencia': formset_ocorrencia,
+                'form_produto_formset': produto_formset,
+                'ocorrencia_formset': ocorrencia_formset,
                 'errors': e,
                 'modo': 'criação'
             })
 
 class Atualizar_Vendas(LoginRequiredMixin,View):
-    template_name = 'posvendasapp/cadastrar_att_vendas.html'
+    template_name = 'posvendasapp/cadastro_vendas.html'
     def get(self, request, *args, **kwargs):
         venda=get_object_or_404(Vendas, pk=self.kwargs['pk'])
         cliente=venda.cliente
@@ -253,6 +260,56 @@ class Atualizar_Vendas(LoginRequiredMixin,View):
                 'modo':'edição'
             })
 
+class DeleteVenda(LoginRequiredMixin,DeleteView):
+    model = Vendas
+    success_url = reverse_lazy('posvendasapp:tabela_vendas')
+    pk_url_kwarg = 'Venda_pk'
+
+    def post(self, request, *args, **kwargs):
+        messages.success(self.request, 'Venda deletado com sucesso!')
+        return super().post(request, *args, **kwargs)
+
+
+class DeleteProduto(LoginRequiredMixin,DeleteView):
+    model = Vendas
+    success_url = reverse_lazy('posvendasapp:tabela_vendas')
+    pk_url_kwarg = 'produto_pk'
+
+    def post(self, request, *args, **kwargs):
+        messages.success(self.request, 'produto deletado com sucesso!')
+        return super().post(request, *args, **kwargs)
+
+class DeleteOcorrencia(LoginRequiredMixin,DeleteView):
+    model = Vendas
+    success_url = reverse_lazy('posvendasapp:tabela_vendas')
+    pk_url_kwarg = 'ocorrencia_pk'
+
+    def post(self, request, *args, **kwargs):
+        messages.success(self.request, 'Ocorrencia deletado com sucesso!')
+        return super().post(request, *args, **kwargs)
+
+class Busca(LoginRequiredMixin,View):
+
+    def get(self, request):
+        termo=request.GET.get('q','').strip()
+        resultados={}
+
+        if termo:
+            for modelo_nome,info in mapa_modelos.items():
+                queryset=info['queryset']
+                campos=info['campos']
+                qs_resultados=Main_services.busca_centralizada(queryset,termo,campos)
+
+                if qs_resultados.exists():
+                    resultados[modelo_nome]=qs_resultados
+
+
+
+
+        return render(request, f'posvendasapp/busca_dinamica.html', {
+            'termo': termo,
+            'resultados': resultados,
+        })
 
 
 def teste_tabelaEquipe(request):

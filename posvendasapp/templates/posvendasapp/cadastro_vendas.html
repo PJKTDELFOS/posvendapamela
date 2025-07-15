@@ -1,0 +1,75 @@
+{% extends "global/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<h2>Cadastro de Venda</h2>
+
+<form method="post">
+    {% csrf_token %}
+
+    <h3>Venda</h3>
+    {{ form_venda|crispy }}
+
+    <h3>Produtos</h3>
+    {{ form_produto_formset.management_form }}
+
+    <div id="produtos-formset">
+        {% for form in form_produto_formset %}
+            <div class="produto-form" style="border: 1px solid #ccc; margin-bottom:10px; padding:10px;">
+                {{ form|crispy }}
+            </div>
+        {% endfor %}
+    </div>
+
+    <button type="button" id="add-produto-btn" class="btn btn-secondary mb-3">Adicionar Produto</button>
+
+    <h3>Ocorrências</h3>
+    {{ ocorrencia_formset.management_form }}
+    <div id="ocorrencias-formset">
+        {% for form in ocorrencia_formset %}
+            <div class="ocorrencia-form" style="border: 1px solid #ccc; margin-bottom:10px; padding:10px;">
+                {{ form|crispy }}
+            </div>
+        {% endfor %}
+    </div>
+
+    <button type="submit" class="btn btn-primary">Salvar Venda</button>
+</form>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const addBtn = document.getElementById("add-produto-btn");
+    const formsetDiv = document.getElementById("produtos-formset");
+    const totalFormsInput = document.querySelector('input[name="{{ form_produto_formset.prefix }}-TOTAL_FORMS"]');
+
+    addBtn.addEventListener("click", function() {
+        // Número atual de formulários
+        const totalForms = parseInt(totalFormsInput.value);
+
+        // Clonar o último formulário
+        const lastForm = formsetDiv.querySelector(".produto-form:last-child");
+        const newForm = lastForm.cloneNode(true);
+
+        // Atualizar os índices dos campos do novo formulário
+        const regex = new RegExp(`(${form_produto_formset.prefix}-\\d+)`, "g");
+        newForm.innerHTML = newForm.innerHTML.replace(regex, `${form_produto_formset.prefix}-${totalForms}`);
+
+        // Limpar valores dos campos do novo formulário
+        newForm.querySelectorAll("input, select, textarea").forEach(input => {
+            if(input.type === "checkbox" || input.type === "radio") {
+                input.checked = false;
+            } else {
+                input.value = "";
+            }
+        });
+
+        // Adicionar o novo formulário ao container
+        formsetDiv.appendChild(newForm);
+
+        // Atualizar o campo TOTAL_FORMS
+        totalFormsInput.value = totalForms + 1;
+    });
+});
+</script>
+
+{% endblock %}

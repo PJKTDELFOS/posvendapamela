@@ -31,11 +31,18 @@ urlpatterns = [
 
     #tabelas
     path('tabela_equipe', views.teste_tabelaEquipe, name='tabela_equipe'),
+    path('busca', views.Busca.as_view(), name='busca_dinamica'),
+
+
     path('tabela_cliente', views.teste_tabela_cliente, name='tabela_cliente'),
 
     #cadastro
     path('cadastrar_equipe', views.CadastrarEquipe.as_view(), name='cadastrar_equipe'),
     path('cadastrar_cliente', views.Cadastrar_Cliente.as_view(), name='cadastrar_cliente'),
+
+    path('cadastrar_venda/<int:pk>', views.Cadastrar_Vendas.as_view(), name='cadastrar_venda')
+
+
 
 
 

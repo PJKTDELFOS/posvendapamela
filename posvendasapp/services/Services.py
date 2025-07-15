@@ -2,6 +2,7 @@ from posvendasapp.forms import EquipeForm,UsuarioForm
 from posvendasapp.vendasforms import *
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.db.models import Q
 
 
 class Main_services:
@@ -64,33 +65,33 @@ class Main_services:
         cliente=form.save(commit=False)
         cliente.save()
         return cliente
+
     @staticmethod
-    def cadastrar_venda(dados_venda,dados_produto,dados_ocorrencia,cliente,vendedor):
-        vendas_form=Vendaforms(dados_venda,cliente=cliente,vendedor=vendedor)
-        produto_formset=ProdutoFormSetCustom(dados_produto)
-        ocorrencia_formset=OcorrenciaFormSet(dados_ocorrencia)
-
+    def cadastrar_venda(dados_venda, dados_produto, dados_ocorrencia, cliente, vendedor, request):
+        vendas_form = Vendaforms(dados_venda, cliente=cliente, vendedor=vendedor)
         if not vendas_form.is_valid():
-            raise ValidationError({'form':vendas_form.errors})
-        if not produto_formset:
-            raise ValidationError({'form':produto_formset.errors})
-        if not ocorrencia_formset:
-            raise ValidationError({'form':ocorrencia_formset.errors})
+            raise ValidationError({'form': vendas_form.errors})
 
+        venda = vendas_form.save(commit=False)
+        venda.cliente = cliente
+        venda.vendedor = vendedor
+
+        produto_formset = ProdutoFormSet(data=dados_produto, instance=venda)
+        ocorrencia_formset = OcorrenciaFormSet(data=dados_ocorrencia, instance=venda)
+        ocorrencia_formset.request = request  # atribui request aqui, não no construtor
+
+        if not produto_formset.is_valid():
+            raise ValidationError({'form': produto_formset.errors})
+        if not ocorrencia_formset.is_valid():
+            raise ValidationError({'form': ocorrencia_formset.errors})
 
         with transaction.atomic():
-            venda=vendas_form.save(commit=False)
-            venda.cliente=cliente
-            venda.vendedor=vendedor
             venda.save()
-
-            produto_formset.instance=venda
             produto_formset.save()
-            ocorrencia_formset.instance=venda
             ocorrencia_formset.save()
 
-
         return venda
+
     @staticmethod
     def atualizar_venda(dados_venda,dados_produto,dados_ocorrencia,venda,cliente,vendedor,request=None):
         vendas_form=Vendaforms(dados_venda,instance=venda,cliente=cliente,vendedor=vendedor)
@@ -112,6 +113,17 @@ class Main_services:
             ocorrencia_formset.save()
 
         return venda
+
+    @staticmethod
+    def busca_centralizada(queryset,termo,campos):
+        q=Q()
+        for campo in campos:
+            q |= Q(**{f"{campo}__icontains": termo})
+        return queryset.filter(q)
+
+
+
+
 
 
 
