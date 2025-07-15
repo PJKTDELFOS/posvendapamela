@@ -28,19 +28,27 @@ urlpatterns = [
     path('logout', views.Logout.as_view(),name='logout'),
      path('', views.testelogin, name='menuinicial'),
 
-
-    #tabelas
-    path('tabela_equipe', views.teste_tabelaEquipe, name='tabela_equipe'),
     path('busca', views.Busca.as_view(), name='busca_dinamica'),
 
 
-    path('tabela_cliente', views.teste_tabela_cliente, name='tabela_cliente'),
+    #equipe
+    path('tabela_equipe', views.Listar_Staff.as_view(), name='tabela_equipe'),
+    path('tabela_equipe/<int:pk>/editar', views.Atualizar_membro_Equipe.as_view(), name='atualizar_equipe'),
+    path('cadastrar_equipe', views.CadastrarEquipe.as_view(), name='cadastrar_equipe'),
+    path('tabela_equipe/<int:pk>/deletar', views.DeleteEquipe.as_view(), name='deletar_equipe'),
+
+
+
+
+
+
+    path('tabela_cliente', views.Listar_Clientes.as_view(), name='tabela_cliente'),
 
     #cadastro
-    path('cadastrar_equipe', views.CadastrarEquipe.as_view(), name='cadastrar_equipe'),
+
     path('cadastrar_cliente', views.Cadastrar_Cliente.as_view(), name='cadastrar_cliente'),
 
-    path('cadastrar_venda/<int:pk>', views.Cadastrar_Vendas.as_view(), name='cadastrar_venda')
+    path('cadastrar_venda/<int:pk>', views.Cadastrar_Vendas.as_view(), name='cadastrar_venda'),
 
 
 
@@ -48,6 +56,7 @@ urlpatterns = [
 
 
     #atualização
+
 
 
 

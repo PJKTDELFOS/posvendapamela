@@ -1,11 +1,67 @@
 {% extends "global/base.html" %}
-{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+<div class="list-container">
+    <h2>Membros da Equipe</h2>
+
+    <!-- Filtro por cargo -->
+    <form method="get" style="margin-bottom: 20px;">
+        <label for="cargo">Filtrar por Cargo:</label>
+        <select name="Cargo" id="cargo" onchange="this.form.submit()" style="margin-left: 10px;">
+            <option value="">Todos</option>
+            {% for c in cargos %}
+                <option value="{{ c }}" {% if request.GET.Cargo == c %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+        </select>
+    </form>
+
+    <!-- Tabela de membros -->
+    <table class="list-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Staff</th>
+                <th>Cargo</th>
+                <th>Ações</th>
 
 
-{%block content %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for membro in equipe %}
+                <tr>
+                    <td data-label="ID">{{ membro.pk }}</td>
+                    <td data-label="Usuário">{{ membro.Usuario.username }}</td>
+                    <td data-label="Cargo">{{ membro.Cargo }}</td>
+                    <td data-label="Ações">
+                        <div class="action-buttons">
+                            <a href="{% url 'posvendasapp:atualizar_equipe' membro.pk %}" class="edit" >Editar</a>
+                            <a href="{% url 'posvendasapp:deletar_equipe' membro.pk %}" class="delete">Excluir</a>
+                        </div>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3" style="text-align: center;">Nenhum membro encontrado.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-<p>
-VOCE ESTA NA TABELA EQUIPE
-</p>
+    <!-- Paginação -->
+    {% if is_paginated %}
+        <div class="pagination" style="margin-top: 20px; text-align: center;">
+            {% if page_obj.has_previous %}
+                <a href="?{% if request.GET.Cargo %}Cargo={{ request.GET.Cargo }}&{% endif %}page={{ page_obj.previous_page_number }}">&laquo; Anterior</a>
+            {% endif %}
 
+            <span style="margin: 0 10px;">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+
+            {% if page_obj.has_next %}
+                <a href="?{% if request.GET.Cargo %}Cargo={{ request.GET.Cargo }}&{% endif %}page={{ page_obj.next_page_number }}">Próxima &raquo;</a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
 {% endblock %}

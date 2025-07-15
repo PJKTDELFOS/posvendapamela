@@ -1,53 +1,22 @@
 {% extends "global/base.html" %}
 {% load crispy_forms_tags %}
 
-{% block content %}
-  <h2>
-    {% if modo == 'edição' %}
-      EDITAR VENDAS
-    {% elif modo == 'criação' %}
-      CADASTRAR VENDAS
-    {% endif %}
-  </h2>
 
-  <form method="post">
+{%block content %}
+
+    <form method="post">
     {% csrf_token %}
+    <h2>Dados do Usuário</h2>
+        {{ form_usuario.non_field_errors }}
+    {{ form_usuario.as_p }}
+    {% csrf_token %}
+    <h2>Dados do Cargo</h2>
+        {{ form_equipe.non_field_errors }}
+    {{ form_equipe.as_p }}
 
-    <h3>Venda</h3>
-    <p><strong>Cliente:</strong> {{ form_venda.cliente_db.value }}</p>
-    <p><strong>Vendedor:</strong> {{ form_venda.vendedor_db.value }}</p>
+    <button type="submit">Salvar</button>
+</form>
 
-    {{ form_venda|crispy }}
 
-    <h3>Produtos</h3>
-    {{ form_produto_formset.management_form }}
-    {% for form in form_produto_formset %}
-      <div class="formset-item">
-        {{ form|crispy }}
-      </div>
-    {% endfor %}
-
-    <h3>Ocorrências (opcional)</h3>
-    {{ ocorrencia_formset.management_form }}
-    {% for form in ocorrencia_formset %}
-      <div class="formset-item">
-        {{ form|crispy }}
-      </div>
-    {% endfor %}
-
-    <button type="submit" class="btn btn-primary mt-3">Salvar</button>
-  </form>
-
-  {% if errors %}
-    <div class="alert alert-danger mt-3">
-      <ul>
-        {% for key, error_list in errors.items %}
-          {% for error in error_list %}
-            <li>{{ error }}</li>
-          {% endfor %}
-        {% endfor %}
-      </ul>
-    </div>
-  {% endif %}
 
 {% endblock %}

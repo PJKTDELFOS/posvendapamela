@@ -35,7 +35,7 @@ ul, ol {
 
 /* Fundo da página */
 body {
-  /*background-image: url("../../imagens/plano_de_fundo_oculos_1.png");*/
+  background-image: url("../../imagens/plano_de_fundo_oculos_1.png");
   font-family: Arial, sans-serif;
   color: #333;
   margin: 0;
@@ -166,4 +166,236 @@ body > p:first-child {
   /* estilo da busca */
 }
 
+/* estilo das listas */
+.list-container {
+  background: rgba(255, 255, 255, 0.15); /* transparência */
+  backdrop-filter: blur(8px); /* efeito vidro */
+  -webkit-backdrop-filter: blur(8px);
+  margin: 40px auto;
+  padding: 30px 40px;
+  max-width: 95vw; /* usa quase toda a largura da janela */
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  color: #fff;
+  font-size: 3.5rem; /* aumenta o tamanho da fonte */
+  line-height: 1.6;
+}
 
+/* Título da lista */
+.list-container h2 {
+  font-size: 24px;
+  color: #fff;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Filtro por cargo */
+.list-container form label,
+.list-container form select {
+  font-size: 16px;
+  color: #fff;
+}
+
+.list-container form select {
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* Tabela da equipe */
+.list-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  color: #fff;
+}
+
+.list-table th,
+.list-table td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 10px 15px;
+  text-align: left;
+  font-size: 18px;
+  background-color: transparent;
+  color: #fff;
+}
+
+.list-table th {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-weight: bold;
+}
+
+/* Estilo ao passar o mouse */
+.list-table tr:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Botões de ação */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.action-buttons a {
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-size: 15px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.action-buttons a.edit {
+  background-color: #ffdd57;
+  color: #333;
+}
+
+.action-buttons a.edit:hover {
+  background-color: #ffc107;
+}
+
+.action-buttons a.delete {
+  background-color: #f87171;
+  color: #fff;
+}
+
+.action-buttons a.delete:hover {
+  background-color: #e53935;
+}
+
+/* Paginação */
+.pagination {
+  text-align: center;
+  margin-top: 25px;
+}
+
+.pagination a {
+  margin: 0 10px;
+  color: #fff;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.pagination span {
+  font-weight: bold;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .list-table,
+  .list-table thead,
+  .list-table tbody,
+  .list-table th,
+  .list-table td,
+  .list-table tr {
+    display: block;
+  }
+
+  .list-table tr {
+    margin-bottom: 20px;
+  }
+
+  .list-table td {
+    padding-left: 50%;
+    position: relative;
+  }
+
+  .list-table td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 15px;
+    font-weight: bold;
+    white-space: nowrap;
+    color: #ccc;
+  }
+
+  .list-table th {
+    display: none;
+  }
+}
+
+/* ===========================
+   FILTROS - FAIXA FININHA E ALINHADA
+   =========================== */
+.filtros-container {
+  background-color: rgba(255, 255, 255, 0.12); /* cor e transparência da faixa */
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 8px 20px; /* altura da faixa */
+  margin: 10px auto 30px;
+  border-radius: 10px;
+  color: #fff;
+  width: 100%; /* ocupa toda a largura */
+  max-width: 1200px; /* largura máxima */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+  /* Flexbox para alinhar horizontalmente */
+  display: flex;
+  flex-wrap: wrap; /* quebra linha se não couber */
+  gap: 20px; /* espaço entre filtros */
+  align-items: center; /* alinhamento vertical */
+  justify-content: flex-start; /* alinhamento horizontal */
+  font-size: 14px;
+}
+
+.filtros-container fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap; /* múltiplas opções */
+  gap: 12px; /* espaço entre opções */
+  align-items: center;
+}
+
+.filtros-container label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  white-space: nowrap; /* evita quebra de texto */
+}
+
+.filtros-container input[type="radio"],
+.filtros-container input[type="checkbox"] {
+  accent-color: #ffc107;
+  transform: scale(1.1);
+  margin: 0;
+}
+
+.filtros-container button {
+  margin-left: auto; /* empurra botão para direita */
+  background-color: #0d6efd;
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  white-space: nowrap;
+}
+
+.filtros-container button:hover {
+  background-color: #ffc107;
+  color: #000;
+}
+
+/* Responsividade para filtros */
+@media (max-width: 600px) {
+  .filtros-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .filtros-container button {
+    margin-left: 0;
+    margin-top: 10px;
+    width: 100%;
+    text-align: center;
+  }
+}

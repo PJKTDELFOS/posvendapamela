@@ -2,7 +2,7 @@ from posvendasapp.services.Services import Main_services
 from django.contrib.auth import  logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
-from django.views.generic.list import View
+from django.views.generic.list import View,ListView
 from django.shortcuts import redirect,render
 from django.views.generic.edit import DeleteView
 import shutil
@@ -14,7 +14,8 @@ from .forms import *
 from.vendasforms import *
 from posvendasapp.services.search_map import mapa_modelos
 from django.http import  HttpResponseBadRequest
-from django.db.models import Q
+from django.db.models import Q,Sum, F, Value
+from django.db.models.functions import Coalesce
 
 # Create your views here.
 
@@ -68,8 +69,8 @@ class CadastrarEquipe(View):
 
 class Atualizar_membro_Equipe(LoginRequiredMixin,View):
     template_name = 'posvendasapp/cadastro_att_equipe.html'
-    def get(self, request, equipe_id):
-        equipe=get_object_or_404(Equipe,id=equipe_id)
+    def get(self, request, pk):
+        equipe=get_object_or_404(Equipe,pk=pk)
         usuario=equipe.Usuario
         form_usuario=UsuarioForm(instance=usuario,Usuario=usuario)
         form_equipe=EquipeForm(instance=equipe)
@@ -79,34 +80,38 @@ class Atualizar_membro_Equipe(LoginRequiredMixin,View):
             'form_equipe':form_equipe,
             'modo': 'edição'})
 
-    def post(self, request, equipe_id):
-        equipe = get_object_or_404(Equipe, id=equipe_id)
+    def post(self, request, pk):
+        equipe = get_object_or_404(Equipe, pk=pk)
         usuario = equipe.Usuario
         form_usuario = UsuarioForm(request.POST, instance=usuario, Usuario=usuario)
         form_equipe = EquipeForm(request.POST, instance=equipe)
 
         try:
-            Main_services.Azualizar_Equipe(request.POST,request.POST,usuario,equipe)
+            Main_services.atualizar_equipe(form_usuario, form_equipe)
+            messages.success(self.request, 'Usuario atualizado com sucesso.')
+
             return redirect('posvendasapp:tabela_equipe')
-        except ValidationError as e:
-            errors=e.message_dict
+        except ValidationError as e :
+
             form_usuario.is_valid()
             form_equipe.is_valid()
             return render(request, self.template_name, {
                 'form_usuario': form_usuario,
                 'form_equipe':  form_equipe,
                 'modo':'edição',
-                'errors':errors,})
+                'errors': e.message_dict if hasattr(e, 'message_dict') else e.messages
+                })
 
 
 
 class DeleteEquipe(LoginRequiredMixin,DeleteView):
     model = Equipe
     success_url = reverse_lazy('posvendasapp:tabela_equipe')
-    pk_url_kwarg = 'equipe_id'
+    pk_url_kwarg = 'pk'
+    template_name = 'posvendasapp/confirmação_delete.html'
 
     def post(self, request, *args, **kwargs):
-        messages.success(self.request, 'pagamento deletado com sucesso!')
+        messages.success(self.request, 'Membro da equipe deletado com sucesso com sucesso!')
         return super().post(request, *args, **kwargs)
 
 
@@ -224,8 +229,8 @@ class Atualizar_Vendas(LoginRequiredMixin, View):
         vendedor = venda.vendedor
 
         form_venda = Vendaforms(instance=venda, cliente=cliente, vendedor=vendedor)
-        produto_formset = ProdutoFormSet(instance=venda)
-        ocorrencia_formset = OcorrenciaFormSet(instance=venda)
+        produto_formset = ProdutoFormSet(instance=venda,prefix='produtos')
+        ocorrencia_formset = OcorrenciaFormSet(instance=venda,prefix='ocorrencias')
         ocorrencia_formset.request = request  # ✅ necessário
 
         return render(request, self.template_name, {
@@ -253,8 +258,8 @@ class Atualizar_Vendas(LoginRequiredMixin, View):
             return redirect('posvendasapp:tabela_cliente')
         except ValidationError as e:
             form_venda = Vendaforms(request.POST, instance=venda, cliente=cliente, vendedor=vendedor)
-            produto_formset = ProdutoFormSet(request.POST, instance=venda)
-            ocorrencia_formset = OcorrenciaFormSet(request.POST, instance=venda)
+            produto_formset = ProdutoFormSet(request.POST, instance=venda,prefix='produtos')
+            ocorrencia_formset = OcorrenciaFormSet(request.POST, instance=venda,prefix='ocorrencias')
             ocorrencia_formset.request = request
 
             return render(request, self.template_name, {
@@ -314,6 +319,60 @@ class Busca(LoginRequiredMixin,View):
             'termo': termo,
             'resultados': resultados,
         })
+
+
+
+class Listar_Staff(ListView):
+    model = Equipe
+    template_name = 'posvendasapp/tabela_equipe.html'
+    context_object_name = 'equipe'
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset = Equipe.objects.order_by('Usuario')
+        cargo = self.request.GET.get('Cargo', 'None')
+        if cargo != 'None' and cargo:
+            queryset = queryset.filter(Cargo=cargo)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['cargos'] = Equipe.objects.values_list('Cargo', flat=True).distinct()
+        return context
+
+
+class Listar_Clientes(ListView):
+    model = Clientes
+    template_name = 'posvendasapp/tabela_clientes.html'
+    context_object_name = 'cliente'
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset = Clientes.objects.all()
+        sort_param = self.request.GET.get('sort', '')
+
+        # Aplica ordenação manual posterior com base no total
+        if sort_param in ['valor_total', 'valor_total_asc']:
+            queryset = list(queryset)
+            queryset.sort(
+                key=lambda cliente: cliente.valor_total_venda_do_cliente,
+                reverse=(sort_param == 'valor_total')
+            )
+        elif sort_param == 'nome':
+            queryset = queryset.order_by('Nome')
+        elif sort_param == 'nome_desc':
+            queryset = queryset.order_by('-Nome')
+        else:
+            queryset = queryset.order_by('-id')
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context
+
+
+
 
 
 def teste_tabelaEquipe(request):

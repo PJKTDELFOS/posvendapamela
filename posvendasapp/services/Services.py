@@ -30,9 +30,7 @@ class Main_services:
 
 
     @staticmethod
-    def Azualizar_Equipe(dados_usuario,dados_equipe,usuario,equipe):
-        form_usuario=UsuarioForm(dados_usuario,instance=usuario,Usuario=None)
-        form_equipe=EquipeForm(dados_equipe,instance=equipe)
+    def atualizar_equipe(form_usuario,form_equipe):
 
         if not form_usuario.is_valid():
             raise ValidationError({'usuario': form_usuario.errors})
@@ -44,6 +42,10 @@ class Main_services:
         nova_senha = form_usuario.cleaned_data['password']
         if nova_senha:
             user.set_password(nova_senha)
+
+        usuario=form_usuario.save(commit=False)
+        usuario.Usuario=user
+        usuario.save()
 
         equipe = form_equipe.save(commit=False)
         equipe.Usuario = user
@@ -97,8 +99,8 @@ class Main_services:
     @staticmethod
     def atualizar_venda(dados_venda,dados_produto,dados_ocorrencia,venda,cliente,vendedor,request=None):
         vendas_form=Vendaforms(dados_venda,instance=venda,cliente=cliente,vendedor=vendedor)
-        produto_formset=ProdutoFormSet(dados_produto,instance=venda)
-        ocorrencia_formset=OcorrenciaFormSet(dados_ocorrencia,instance=venda,request=request)
+        produto_formset=ProdutoFormSet(dados_produto,instance=venda,prefix='produtos')
+        ocorrencia_formset=OcorrenciaFormSet(dados_ocorrencia,instance=venda,request=request,prefix='ocorrencias')
         if not vendas_form.is_valid():
             raise ValidationError({'form':vendas_form.errors})
         if not produto_formset.is_valid():
