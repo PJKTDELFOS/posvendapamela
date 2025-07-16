@@ -3,15 +3,16 @@
 
 
 {%block content %}
+
+
+    <form method="post" enctype="multipart/form-data" class="form-container formulario-simples">
     <h2>
     {% if modo == 'edição' %}
-    <P>Edição de  Cliente</P>
+        Edição de  Cliente
     {% elif modo == 'criação'  %}
-    <P>Cadastro de  Cliente</P>
+        Cadastro de  Cliente
     {% endif %}
     </h2>
-
-    <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ cliente_form.as_p }}
 

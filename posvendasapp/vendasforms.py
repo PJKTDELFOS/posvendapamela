@@ -87,7 +87,7 @@ class OcorrenciaForm(forms.ModelForm):
 
     class Meta:
         model = Ocorrencia
-        fields = '__all__'
+        exclude=['vendedor']
 
 class ProdutoFormSetCustom(BaseInlineFormSet):
     def clean(self):

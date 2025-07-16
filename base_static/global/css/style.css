@@ -35,16 +35,15 @@ ul, ol {
 
 /* Fundo da página */
 body {
+  min-height: 100vh;
   background-image: url("../../imagens/plano_de_fundo_oculos_1.png");
   font-family: Arial, sans-serif;
   color: #333;
   margin: 0;
   padding: 0;
-  height: 100vh;
   background-position: center;
-  background-repeat: no-repeat;
+  background-repeat: repeat;
   background-size: cover;
-}
 
 /* Título da navbar */
 .navbar-title {
@@ -204,6 +203,14 @@ body > p:first-child {
   background-color: rgba(255, 255, 255, 0.1);
   color: #fff;
 }
+
+/* Correção para visibilidade das opções do <select> */
+select,
+select option {
+  color: #000; /* cor do texto das opções */
+  background-color: #fff; /* fundo branco para contraste */
+}
+
 
 /* Tabela da equipe */
 .list-table {
@@ -398,4 +405,152 @@ body > p:first-child {
     width: 100%;
     text-align: center;
   }
+}
+
+/* ========================
+   FORMULÁRIOS - ESTILO PADRÃO
+   ======================== */
+.form-container {
+  background-color: rgba(0, 0, 0, 0.4); /* fundo translúcido */
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 800px;
+  margin: auto;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.form-container label,
+.form-container input,
+.form-container select,
+.form-container textarea {
+  color: #f0f0f0;
+  font-size: 1rem;
+}
+
+.form-container input,
+.form-container select,
+.form-container textarea {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid #ccc;
+  padding: 0.6rem;
+  border-radius: 6px;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.form-container input:focus,
+.form-container select:focus,
+.form-container textarea:focus {
+  outline: none;
+  border-color: #66ccff;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.form-container button {
+  padding: 0.6rem 1.2rem;
+  background-color: #3399ff;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.form-container button:hover {
+  background-color: #1a75d1;
+}
+
+/* ========================
+   FORMULÁRIOS SIMPLES (sem formset)
+   ======================== */
+.formulario-simples {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+/* ========================
+   FORMSETS - FORMULÁRIOS COM VÁRIOS ITENS
+   ======================== */
+.formset-item {
+  opacity: 0;
+  transform: translateY(-10px);
+  animation: slideDown 0.4s ease forwards;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+    height: 0;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    height: auto;
+  }
+}
+
+#add-formset-btn {
+  margin-top: 1rem;
+  background-color: #28a745;
+}
+
+#add-formset-btn:hover {
+  background-color: #218838;
+}
+.form-container h2 {
+  color: #ffc107; /* amarelo destaque */
+  font-size: 1.6rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 0.5rem;
+  text-align: center; /* centraliza o título */
+}
+/* ===========================
+   FORMULÁRIOS COM BLOCOS DESLIZANTES (ACCORDION)
+   =========================== */
+.form-colapsavel {
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-colapsavel summary {
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: #ffc107;
+  margin-bottom: 1rem;
+}
+
+.formset-scroll {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* Scroll estilizado */
+.formset-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.formset-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.formset-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.formset-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: #ffc107;
+}
+}
+div[id^="div_id_"][id$="-DELETE"] {
+    display: none !important;
 }

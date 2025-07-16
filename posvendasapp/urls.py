@@ -38,16 +38,18 @@ urlpatterns = [
     path('tabela_equipe/<int:pk>/deletar', views.DeleteEquipe.as_view(), name='deletar_equipe'),
 
 
-
-
-
-
+    #cliente
     path('tabela_cliente', views.Listar_Clientes.as_view(), name='tabela_cliente'),
-
-    #cadastro
-
     path('cadastrar_cliente', views.Cadastrar_Cliente.as_view(), name='cadastrar_cliente'),
+    path('tabela_cliente/<int:pk>/editar', views.Atualizar_Cliente.as_view(), name='atualizar_cliente'),
+    path('tabela_cliente/<int:pk>/deletar', views.DeleteCliente.as_view(), name='deletar_cliente'),
 
+
+
+
+
+
+    #vendas
     path('cadastrar_venda/<int:pk>', views.Cadastrar_Vendas.as_view(), name='cadastrar_venda'),
 
 

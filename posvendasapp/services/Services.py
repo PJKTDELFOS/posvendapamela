@@ -13,10 +13,10 @@ class Main_services:
         form_equipe=EquipeForm(dados_equipe)
 
         if not form_usuario.is_valid():
-            raise ValidationError({'usuario':form_usuario.errors})
+            raise ValidationError(form_usuario.errors)
 
         if not form_equipe.is_valid():
-            raise ValidationError({'equipe':form_equipe.errors})
+            raise ValidationError(form_equipe.errors)
 
 
         user=form_usuario.save(commit=False)
@@ -33,10 +33,10 @@ class Main_services:
     def atualizar_equipe(form_usuario,form_equipe):
 
         if not form_usuario.is_valid():
-            raise ValidationError({'usuario': form_usuario.errors})
+            raise ValidationError(form_usuario.errors)
 
         if not form_equipe.is_valid():
-            raise ValidationError({'equipe': form_equipe.errors})
+            raise ValidationError(form_equipe.errors)
 
         user=form_usuario.save(commit=False)
         nova_senha = form_usuario.cleaned_data['password']
@@ -55,7 +55,7 @@ class Main_services:
     @staticmethod
     def cadastrar_cliente(form):
         if not form.is_valid():
-            raise ValidationError("Formulário inválido")
+            raise ValidationError(form.errors)
         cliente=form.save(commit=False)
         cliente.save()
         return cliente
@@ -63,7 +63,7 @@ class Main_services:
     @staticmethod
     def atualizar_clientes(form):
         if not form.is_valid():
-            raise ValidationError("Formulário inválido")
+            raise ValidationError(form.errors)
         cliente=form.save(commit=False)
         cliente.save()
         return cliente
@@ -72,7 +72,7 @@ class Main_services:
     def cadastrar_venda(dados_venda, dados_produto, dados_ocorrencia, cliente, vendedor, request):
         vendas_form = Vendaforms(dados_venda, cliente=cliente, vendedor=vendedor)
         if not vendas_form.is_valid():
-            raise ValidationError({'form': vendas_form.errors})
+            raise ValidationError(vendas_form.errors)
 
         venda = vendas_form.save(commit=False)
         venda.cliente = cliente
@@ -85,10 +85,10 @@ class Main_services:
 
         if not produto_formset.is_valid():
             print("Erros no formset de produtos:", produto_formset.errors)
-            raise ValidationError({'form': produto_formset.errors})
+            raise ValidationError(produto_formset.errors)
 
         if not ocorrencia_formset.is_valid():
-            raise ValidationError({'form': ocorrencia_formset.errors})
+            raise ValidationError(ocorrencia_formset.errors)
 
         with transaction.atomic():
             produto_formset.save()
@@ -102,11 +102,11 @@ class Main_services:
         produto_formset=ProdutoFormSet(dados_produto,instance=venda,prefix='produtos')
         ocorrencia_formset=OcorrenciaFormSet(dados_ocorrencia,instance=venda,request=request,prefix='ocorrencias')
         if not vendas_form.is_valid():
-            raise ValidationError({'form':vendas_form.errors})
+            raise ValidationError(vendas_form.errors)
         if not produto_formset.is_valid():
-            raise ValidationError({'form':produto_formset.errors})
+            raise ValidationError(produto_formset.errors)
         if not ocorrencia_formset.is_valid():
-            raise ValidationError({'form':ocorrencia_formset.errors})
+            raise ValidationError(ocorrencia_formset.errors)
 
         with transaction.atomic():
             venda=vendas_form.save(commit=False)

@@ -50,8 +50,8 @@
         <td>{{ cliente.contato }}</td>
         <td>R$ {{ cliente.valor_total_venda_do_cliente|floatformat:2 }}</td>
         <td class="action-buttons">
-          <a href="#" class="edit">Editar</a>
-          <a href="#" class="delete">Deletar</a>
+          <a href="{% url 'posvendasapp:atualizar_cliente' cliente.pk %}" class="edit">Editar</a>
+          <a href="{% url 'posvendasapp:deletar_cliente' cliente.pk %}" class="delete">Deletar</a>
         </td>
       </tr>
       {% empty %}

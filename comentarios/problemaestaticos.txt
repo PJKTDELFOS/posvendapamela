@@ -6,7 +6,8 @@ incluir segurança maxima no sistema
 nao passar request direto no inline_formset
 usar oum script jaba para add  botoes
 
-
+ {{ form_venda.cliente_db|as_crispy_field }}
+        {{ form_venda.vendedor_db|as_crispy_field }}
 
 para atualizar valor total sem reload
 produto formset

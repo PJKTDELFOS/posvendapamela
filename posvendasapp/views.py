@@ -108,7 +108,7 @@ class DeleteEquipe(LoginRequiredMixin,DeleteView):
     model = Equipe
     success_url = reverse_lazy('posvendasapp:tabela_equipe')
     pk_url_kwarg = 'pk'
-    template_name = 'posvendasapp/confirmação_delete.html'
+    template_name = 'posvendasapp/confirmação_delete_equipe.html'
 
     def post(self, request, *args, **kwargs):
         messages.success(self.request, 'Membro da equipe deletado com sucesso com sucesso!')
@@ -156,7 +156,7 @@ class Atualizar_Cliente(LoginRequiredMixin,View):
             print(form_cliente.errors)
             return render(request, self.template_name, {
                 'cliente_form': form_cliente,
-                'modo': 'edição'
+                'modo':'edição'
 
             })
 
@@ -164,10 +164,11 @@ class Atualizar_Cliente(LoginRequiredMixin,View):
 class DeleteCliente(LoginRequiredMixin,DeleteView):
     model = Clientes
     success_url = reverse_lazy('posvendasapp:tabela_cliente')
-    pk_url_kwarg = 'cliente_id'
+    pk_url_kwarg = 'pk'
+    template_name = 'posvendasapp/confirmação_delete_cliente.html'
 
     def post(self, request, *args, **kwargs):
-        messages.success(self.request, 'Cliente deletado com sucesso!')
+        messages.success(self.request, 'cliente deletado com sucesso com sucesso!')
         return super().post(request, *args, **kwargs)
 
 
