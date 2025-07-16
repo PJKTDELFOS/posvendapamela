@@ -23,8 +23,8 @@ class ProdutosInline(admin.TabularInline):
 class VendasInline(admin.TabularInline):
     model = Vendas
     extra = 0
-    readonly_fields = ('pk','Data_venda','valor_total_venda_formatada', 'previsao_de_returno','get_vendedor_username')
-    fields = ('pk','Data_venda','valor_total_venda_formatada', 'previsao_de_returno','get_vendedor_username')
+    readonly_fields = ('pk','Data_venda','valor_total_venda_formatada', 'previsao_de_retorno','get_vendedor_username')
+    fields = ('pk','Data_venda','valor_total_venda_formatada', 'previsao_de_retorno','get_vendedor_username')
     fk_name = 'cliente'# aqui usa o campo
 
     def  get_vendedor_username(self,obj):
@@ -77,11 +77,11 @@ class ClientesAdmin(admin.ModelAdmin):
 # Admin de Vendas com Produtos Inline
 @admin.register(Vendas)
 class VendasAdmin(admin.ModelAdmin):
-    list_display = ('cliente', 'Data_venda', 'previsao_de_returno', 'valor_total_venda_formatada','vendedor')
+    list_display = ('cliente', 'Data_venda', 'previsao_de_retorno', 'valor_total_venda_formatada','vendedor')
     search_fields = ('cliente__Nome','vendedor__Usuario__username')
     list_filter = ('Data_venda',)
     inlines = [ProdutosInline,OcorrenciaInline]
-    readonly_fields = ('valor_total_venda_formatada', 'previsao_de_returno','vendedor')
+    readonly_fields = ('valor_total_venda_formatada', 'previsao_de_retorno','vendedor')
 
     def  get_vendedor_username(self,obj):
         return obj.vendedor.Usuario.username

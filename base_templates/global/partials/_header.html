@@ -22,7 +22,7 @@
 
 
                     <li class="dropdown-sub">
-                        <a href="#">Vendas</a>
+                        <a  href="{% url 'posvendasapp:tabela_venda' %}">Vendas</a>
                         <ul class="dropdown-sub-content">
                             {% if pk %}
                                 <li><a href="{% url 'posvendasapp:cadastrar_venda' pk %}">Cadastrar vendas</a></li>

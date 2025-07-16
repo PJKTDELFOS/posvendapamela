@@ -65,15 +65,21 @@ class Vendas(models.Model):
         cliente=self.cliente
         return cliente.Nome
     @property
-    def previsao_de_returno(self):
+    def previsao_de_retorno(self):
         if isinstance(self.Data_venda, date) and isinstance(self.Previsao, int):
             data_retorno = self.Data_venda + timedelta(days=self.Previsao)
             return data_retorno.strftime('%d/%m/%Y')
         return 'Previsao nao definida'
 
     def previsao_retorno_formatada(self):
-        return f'{self.previsao_de_returno} dias'
+        return f'{self.previsao_de_retorno} dias'
     previsao_retorno_formatada.short_description = 'Previsao retorno formatada'
+
+    @property
+    def previsao_data(self):
+        if isinstance(self.Data_venda, date) and isinstance(self.Previsao, int):
+            return self.Data_venda + timedelta(days=self.Previsao)
+        return None
 
     @property
     def valor_total_venda(self):

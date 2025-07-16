@@ -13,6 +13,8 @@ from django.contrib.auth.decorators import login_required
 from .forms import *
 from.vendasforms import *
 from posvendasapp.services.search_map import mapa_modelos
+from datetime import date,timedelta
+from django.core.paginator import Paginator
 from django.http import  HttpResponseBadRequest
 from django.db.models import Q,Sum, F, Value
 from django.db.models.functions import Coalesce
@@ -38,7 +40,7 @@ class Logout(LoginRequiredMixin,View):
         return redirect('posvendasapp:login_sistema')
 @login_required
 def testelogin(request):
-    return render(request, 'posvendasapp/tabela_vendas.html')
+    return render(request, 'posvendasapp/tela_inicial_vazia.html')
 
 
 class CadastrarEquipe(View):
@@ -270,14 +272,7 @@ class Atualizar_Vendas(LoginRequiredMixin, View):
                 'errors': e,
                 'modo': 'edição'
             })
-class DeleteVenda(LoginRequiredMixin,DeleteView):
-    model = Vendas
-    success_url = reverse_lazy('posvendasapp:tabela_vendas')
-    pk_url_kwarg = 'Venda_pk'
 
-    def post(self, request, *args, **kwargs):
-        messages.success(self.request, 'Venda deletado com sucesso!')
-        return super().post(request, *args, **kwargs)
 
 
 class DeleteProduto(LoginRequiredMixin,DeleteView):
@@ -374,13 +369,68 @@ class Listar_Clientes(ListView):
 
 
 
+class Listar_Vendas(LoginRequiredMixin, ListView):
+    model = Vendas
+    template_name = 'posvendasapp/tabela_vendas.html'
+    context_object_name = 'vendas'
+    paginate_by = 10
+
+    def get_queryset(self):
+        qs = Vendas.objects.select_related('cliente', 'vendedor') \
+            .prefetch_related('produtos_vendidos', 'ocorrencias_venda')
+
+        nome = self.request.GET.get('nome', '')
+        valor = self.request.GET.get('valor', '')
+        retorno = self.request.GET.get('retorno', '')
+
+        # Ordenação por nome
+        if nome == 'az':
+            return qs.order_by('cliente__Nome')
+        elif nome == 'za':
+            return qs.order_by('-cliente__Nome')
+
+        # Ordenação por valor
+        if valor in ['asc', 'dec']:
+            order = 'valor_total_venda' if valor == 'asc' else '-valor_total_venda'
+            return qs.order_by(order)
+
+        # Ordenação por data de retorno (calculada) - aqui vira lista
+        if retorno in ['asc', 'dec']:
+            lista = list(qs)
+            lista.sort(
+                key=lambda v: (v.Data_venda + timedelta(days=v.Previsao))
+                              if v.Data_venda and v.Previsao else date.min,
+                reverse=(retorno == 'dec')
+            )
+            return lista  # paga manualmente depois
+
+        # Default
+        return qs.order_by('-id')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        qs = self.get_queryset()
+
+        # Se for lista, paginar manualmente
+        if isinstance(qs, list):
+            paginator = Paginator(qs, self.paginate_by)
+            page_number = self.request.GET.get('page') or 1
+            page_obj = paginator.get_page(page_number)
+            context['vendas'] = page_obj
+            context['page_obj'] = page_obj
+            context['paginator'] = paginator
+            context['is_paginated'] = page_obj.has_other_pages()
+
+        return context
 
 
-def teste_tabelaEquipe(request):
-    print('Vai redirecionar para tabela_equipe')
-    return render(request, 'posvendasapp/tabela_equipe.html')
+class DeleteVenda(LoginRequiredMixin,DeleteView):
+    model = Vendas
+    success_url = reverse_lazy('posvendasapp:tabela_vendas')
+    pk_url_kwarg = 'Venda_pk'
+
+    def post(self, request, *args, **kwargs):
+        messages.success(self.request, 'Venda deletado com sucesso!')
+        return super().post(request, *args, **kwargs)
 
 
-def teste_tabela_cliente(request):
-    print('Vai redirecionar para tabela_cliente')
-    return render(request, 'posvendasapp/tabela_clientes.html')

@@ -32,14 +32,14 @@ urlpatterns = [
 
 
     #equipe
-    path('tabela_equipe', views.Listar_Staff.as_view(), name='tabela_equipe'),
+    path('tabela_equipe/', views.Listar_Staff.as_view(), name='tabela_equipe'),
     path('tabela_equipe/<int:pk>/editar', views.Atualizar_membro_Equipe.as_view(), name='atualizar_equipe'),
     path('cadastrar_equipe', views.CadastrarEquipe.as_view(), name='cadastrar_equipe'),
     path('tabela_equipe/<int:pk>/deletar', views.DeleteEquipe.as_view(), name='deletar_equipe'),
 
 
     #cliente
-    path('tabela_cliente', views.Listar_Clientes.as_view(), name='tabela_cliente'),
+    path('tabela_cliente/', views.Listar_Clientes.as_view(), name='tabela_cliente'),
     path('cadastrar_cliente', views.Cadastrar_Cliente.as_view(), name='cadastrar_cliente'),
     path('tabela_cliente/<int:pk>/editar', views.Atualizar_Cliente.as_view(), name='atualizar_cliente'),
     path('tabela_cliente/<int:pk>/deletar', views.DeleteCliente.as_view(), name='deletar_cliente'),
@@ -50,7 +50,11 @@ urlpatterns = [
 
 
     #vendas
+
+    path('tabela_venda/', views.Listar_Vendas.as_view(), name='tabela_venda'),
     path('cadastrar_venda/<int:pk>', views.Cadastrar_Vendas.as_view(), name='cadastrar_venda'),
+
+
 
 
 

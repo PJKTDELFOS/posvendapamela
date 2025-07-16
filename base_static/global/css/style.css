@@ -554,3 +554,63 @@ select option {
 div[id^="div_id_"][id$="-DELETE"] {
     display: none !important;
 }
+
+/*  grid de ordenação */
+
+.ordenacao-grid {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  max-width: 600px;
+  margin: 1rem auto;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.grupo-ordenacao {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 120px;
+  flex: 1;
+}
+
+.grupo-ordenacao strong {
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.grupo-ordenacao label {
+  cursor: pointer;
+  user-select: none;
+  font-weight: normal;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 1.1rem;
+}
+
+.ordenar-btn {
+  max-width: 500px;
+  margin:  auto;
+  text-align: center;
+}
+
+.btn-ordenar {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1.1rem;
+  transition: background-color 0.3s ease;
+}
+
+.btn-ordenar:hover {
+  background-color: #0056b3;
+}

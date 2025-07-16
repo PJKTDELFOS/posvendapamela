@@ -1,15 +1,84 @@
 {% extends "global/base.html" %}
-{% load crispy_forms_tags %}
 
+{% block content %}
+    <div class="list-container">
+        <h2>LISTA DE VENDAS</h2>
 
-{%block content%}
+        <!-- Ordenação -->
+        <form method="get" class="ordenacao-grid">
+            <div class="grupo-ordenacao">
+                <strong>Nome</strong>
+                <label><input type="radio" name="nome" value="az" {% if request.GET.nome == 'az' %}checked{% endif %}>
+                    A‑Z</label>
+                <label><input type="radio" name="nome" value="za" {% if request.GET.nome == 'za' %}checked{% endif %}>
+                    Z‑A</label>
+            </div>
 
-{% if user.is_authenticated %}
-    voce esta logado nas vendas
+            <div class="grupo-ordenacao">
+                <strong>Retorno</strong>
+                <label><input type="radio" name="retorno" value="asc"
+                              {% if request.GET.retorno == 'asc' %}checked{% endif %}> ↑</label>
+                <label><input type="radio" name="retorno" value="dec"
+                              {% if request.GET.retorno == 'dec' %}checked{% endif %}> ↓</label>
+            </div>
 
-    {% else %}
-    <p> voce nao esta logado faça o login</p>
+            <div class="grupo-ordenacao">
+                <strong>Valor</strong>
+                <label><input type="radio" name="valor" value="asc"
+                              {% if request.GET.valor == 'asc' %}checked{% endif %}> ↑</label>
+                <label><input type="radio" name="valor" value="dec"
+                              {% if request.GET.valor == 'dec' %}checked{% endif %}> ↓</label>
+            </div>
 
-{% endif %}
+            <div class="grupo-ordenacao ordenar-btn">
+                <button type="submit" class="btn-ordenar">Ordenar</button>
+            </div>
+        </form>
 
+        <!-- Tabela de vendas -->
+        <table class="list-table">
+            <thead>
+            <tr>
+                <th>Cliente</th>
+                <th>Data da Venda</th>
+                <th>Previsão (dias)</th>
+                <th>Data de Retorno</th>
+                <th>Vendedor</th>
+                <th>Valor Total</th>
+                <th>Ações</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for venda in vendas %}
+                <tr>
+                    <td data-label="Cliente">{{ venda.cliente.Nome }}</td>
+                    <td data-label="Data da Venda">{{ venda.Data_venda|date:"d/m/Y" }}</td>
+                    <td data-label="Previsão (dias)">{{ venda.Previsao|default:"-" }}</td>
+                    <td data-label="Retorno">
+                        {% if venda.previsao_de_retorno != "Previsao nao definida" %}
+                            {{ venda.previsao_de_retorno }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td data-label="Vendedor">{{ venda.vendedor.Usuario }}</td>
+                    <td data-label="Valor Total">
+                        R$ {{ venda.valor_total_venda|floatformat:2|default:"0.00" }}
+                    </td>
+                    <td data-label="Ações">
+                        <div class="action-buttons">
+                            <a href="#" class="edit">Editar</a>
+                            <a href="#" class="delete">Remover</a>
+                        </div>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7">Nenhuma venda registrada.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
 {% endblock %}
