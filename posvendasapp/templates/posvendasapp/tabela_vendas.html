@@ -5,7 +5,7 @@
         <h2>LISTA DE VENDAS</h2>
 
         <!-- Ordenação -->
-        <form method="get" class="ordenacao-grid">
+        <form method="get" class="ordenacao-grid" id="form-ordenacao">
             <div class="grupo-ordenacao">
                 <strong>Nome</strong>
                 <label><input type="radio" name="nome" value="az" {% if request.GET.nome == 'az' %}checked{% endif %}>
@@ -39,6 +39,7 @@
         <table class="list-table">
             <thead>
             <tr>
+                <th>Venda-id</th>
                 <th>Cliente</th>
                 <th>Data da Venda</th>
                 <th>Previsão (dias)</th>
@@ -51,6 +52,7 @@
             <tbody>
             {% for venda in vendas %}
                 <tr>
+                    <td data-label="id">{{ venda.pk }}</td>
                     <td data-label="Cliente">{{ venda.cliente.Nome }}</td>
                     <td data-label="Data da Venda">{{ venda.Data_venda|date:"d/m/Y" }}</td>
                     <td data-label="Previsão (dias)">{{ venda.Previsao|default:"-" }}</td>
@@ -67,8 +69,8 @@
                     </td>
                     <td data-label="Ações">
                         <div class="action-buttons">
-                            <a href="#" class="edit">Editar</a>
-                            <a href="#" class="delete">Remover</a>
+                            <a href="{% url 'posvendasapp:atualizar_venda' venda.pk %}" class="edit">Editar</a>
+                            <a href="{% url 'posvendasapp:deletar_venda' venda.pk %}" class="delete">Apagar</a>
                         </div>
                     </td>
                 </tr>
@@ -79,6 +81,30 @@
             {% endfor %}
             </tbody>
         </table>
-
     </div>
+
+    <!-- Script de controle de ordenação -->
+    <script>
+    document.getElementById('form-ordenacao').addEventListener('submit', function(event){
+        event.preventDefault();
+
+        const form = event.target;
+        const params = new URLSearchParams();
+
+        const nome = form.querySelector('input[name="nome"]:checked');
+        const retorno = form.querySelector('input[name="retorno"]:checked');
+        const valor = form.querySelector('input[name="valor"]:checked');
+
+        if (nome) {
+            params.append('nome', nome.value);
+        } else if (retorno) {
+            params.append('retorno', retorno.value);
+        } else if (valor) {
+            params.append('valor', valor.value);
+        }
+
+        const url = window.location.pathname + '?' + params.toString();
+        window.location.href = url;
+    });
+    </script>
 {% endblock %}

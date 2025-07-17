@@ -1,0 +1,87 @@
+{% extends "global/base.html" %}
+
+{% block content %}
+    <div class="list-container">
+        <h2>LISTA DE VENDAS</h2>
+
+
+        <!-- Tabela de vendas -->
+        <table class="list-table">
+            <thead>
+            <tr>
+                <th>Produto-id</th>
+                <th>Venda-id</th>
+                <th>Cliente-Comprador</th>
+                <th>Data da Venda</th>
+                <th>Produto</th>
+                <th>Tipo de Produto</th>
+                <th>Vendedor</th>
+                <th>Valor sem desconto</th>
+                <th>Desconto</th>
+                <th>Valor De venda</th>
+                <th>Ações</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for produto in produtos %}
+                <tr>
+                    <td data-label="id">{{ produto.pk }}</td>
+                    <td data-label="id">{{ produto.venda.pk }}</td>
+                    <td data-label="Cliente">{{ produto.venda.cliente.Nome }}</td>
+                    <td data-label="Data da Venda">{{ produto.venda.Data_venda|date:"d/m/Y" }}</td>
+                    <td data-label="Produto">{{ produto.Produto }}</td>
+                    <td data-label="tipo">{{ produto.tipo }}</td>
+                    <td data-label="Vendedor">{{ produto.venda.vendedor.Usuario }}</td>
+                    <td data-label="Valor Original">
+                        R$ {{ produto.valor_produto_sem_desconto|floatformat:2|default:"0.00" }}
+                    </td>
+                    <td data-label="Desconto">
+                         {{ produto.desconto }}%
+                    </td>
+                    <td data-label="Valor Original">
+                        R$ {{ produto.Valor_venda|floatformat:2|default:"0.00" }}
+                    </td>
+
+
+                    <td data-label="Ações">
+                        <div class="action-buttons">
+                            <a href="#" class="edit">Editar</a>
+                            <a href="#" class="delete">Apagar</a>
+                        </div>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7">Nenhum produto registrado.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock %}
+
+<!-- Script de controle de ordenação
+    <script>
+    document.getElementById('form-ordenacao').addEventListener('submit', function(event){
+        event.preventDefault();
+
+        const form = event.target;
+        const params = new URLSearchParams();
+
+        const nome = form.querySelector('input[name="nome"]:checked');
+        const retorno = form.querySelector('input[name="retorno"]:checked');
+        const valor = form.querySelector('input[name="valor"]:checked');
+
+        if (nome) {
+            params.append('nome', nome.value);
+        } else if (retorno) {
+            params.append('retorno', retorno.value);
+        } else if (valor) {
+            params.append('valor', valor.value);
+        }
+
+        const url = window.location.pathname + '?' + params.toString();
+        window.location.href = url;
+    });
+    </script>-->

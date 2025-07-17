@@ -2,184 +2,202 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-<div class="form-container formulario-formset">
-    <h2>
-        {% if modo == 'edição' %}
-            EDITAR VENDAS
-        {% elif modo == 'criação' %}
-            CADASTRAR VENDAS
-        {% endif %}
-    </h2>
-
-    <form method="post" novalidate>
-        {% csrf_token %}
-
-        <h4 class="form-subtitle">Informações da Venda</h4>
-
-        {# Renderiza todos os campos do form (já sem o campo vendedor no forms) #}
-        {{ form_venda|crispy }}
-
-        <hr>
-
-        <details class="form-colapsavel" open>
-            <summary class="form-colapsavel-title">Produtos (clique para expandir/recolher)</summary>
-            {{ form_produto_formset.management_form }}
-            <div id="produtos-formset" class="formset-scroll">
-                {% for form in form_produto_formset %}
-                    <div class="formset-grupo">
-                        {{ form|crispy }}
-
-                        <button type="button" class="btn-remove-form">Remover form</button>
-
-                        {% if modo == 'edição' %}
-                            {% if form.instance.pk %}
-                                <a href="#" class="btn btn-danger btn-delete-produto" onclick="return confirm('Tem certeza que deseja deletar este produto?');">Deletar produto</a>
-                            {% endif %}
-                        {% endif %}
-                    </div>
-                {% endfor %}
-            </div>
-            {% if modo != 'edição' %}
-                <button type="button" class="btn-add-form" id="add-produto-btn">Adicionar Produto</button>
+    <div class="form-container formulario-formset">
+        <h2>
+            {% if modo == 'edição' %}
+                EDITAR VENDAS
+            {% elif modo == 'criação' %}
+                CADASTRAR VENDAS
             {% endif %}
-        </details>
+        </h2>
 
-        <hr>
+        <form method="post" novalidate>
+            {% csrf_token %}
 
-        <details class="form-colapsavel">
-            <summary class="form-colapsavel-title">Ocorrências (clique para expandir/recolher)</summary>
-            {{ ocorrencia_formset.management_form }}
-            <div id="ocorrencias-formset" class="formset-scroll">
-                {% for form in ocorrencia_formset %}
-                    <div class="formset-grupo">
-                        {# Renderiza os campos visíveis do form, ignorando os campos hidden como DELETE #}
-                        {% for field in form.visible_fields %}
-                            {{ field|as_crispy_field }}
-                        {% endfor %}
+            <h4 class="form-subtitle">Informações da Venda</h4>
 
-                        <button type="button" class="btn-remove-form">Remover form</button>
-                    </div>
-                {% endfor %}
+            {# Renderiza todos os campos do form (já sem o campo vendedor no forms) #}
+            {{ form_venda|crispy }}
+
+            <hr>
+
+            <details class="form-colapsavel" open>
+                <summary class="form-colapsavel-title">Produtos (clique para expandir/recolher)</summary>
+                {{ form_produto_formset.management_form }}
+                <div id="produtos-formset" class="formset-scroll">
+                    {% for form in form_produto_formset %}
+                        <div class="formset-grupo">
+                            {{ form|crispy }}
+
+                            <button type="button" class="btn-remove-form">Remover form</button>
+
+                            {% if modo == 'edição' %}
+                                {% if form.instance.pk %}
+                                    <a href="#" class="btn btn-danger btn-delete-produto"
+                                       onclick="return confirm('Tem certeza que deseja deletar este produto?');">Deletar
+                                        produto</a>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                {% if modo != 'edição' %}
+                    <button type="button" class="btn-add-form" id="add-produto-btn">Adicionar Produto</button>
+                {% endif %}
+            </details>
+
+            <hr>
+
+            <details class="form-colapsavel">
+                <summary class="form-colapsavel-title">Ocorrências (clique para expandir/recolher)</summary>
+                {{ ocorrencia_formset.management_form }}
+                <div id="ocorrencias-formset" class="formset-scroll">
+                    {% for form in ocorrencia_formset %}
+                        <div class="formset-grupo">
+                            {% for hidden in form.hidden_fields %}
+                                {{ hidden }}
+                            {% endfor %}
+                            {% for field in form.visible_fields %}
+                                {{ field|as_crispy_field }}
+                            {% endfor %}
+                            <button type="button" class="btn-remove-form">Remover form</button>
+                        </div>
+                    {% endfor %}
+                </div>
+                <button type="button" class="btn-add-form" id="add-ocorrencia-btn">Adicionar Ocorrência</button>
+            </details>
+
+            <button type="submit" class="btn-submit">Salvar Venda</button>
+        </form>
+    </div>
+
+    <!-- Template invisível Produto -->
+    <div id="empty-produto-form-template" style="display: none;">
+        <div class="formset-grupo">
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="id_produtos-__prefix__-Produto">Produto</label>
+                    <input type="text" name="produtos-__prefix__-Produto" id="id_produtos-__prefix__-Produto"
+                           class="form-control"/>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="id_produtos-__prefix__-tipo">Tipo</label>
+                    <select name="produtos-__prefix__-tipo" id="id_produtos-__prefix__-tipo" class="form-control">
+                        <option value="">---------</option>
+                        <option value="Contato-diaria">Contato-diaria</option>
+                        <option value="Contato-Quinzenal">Contato-Quinzenal</option>
+                        <option value="Solar">Solar</option>
+                        <option value="Receituario">Receituario</option>
+                        <option value="Multifocal">Multifocal</option>
+                        <option value="Visão simples">Visão simples</option>
+                    </select>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="id_produtos-__prefix__-Valor_venda">Valor de venda</label>
+                    <input type="number" step="0.01" name="produtos-__prefix__-Valor_venda"
+                           id="id_produtos-__prefix__-Valor_venda" class="form-control"/>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="id_produtos-__prefix__-valor_produto_sem_desconto">Valor original</label>
+                    <input type="number" step="0.01" name="produtos-__prefix__-valor_produto_sem_desconto"
+                           id="id_produtos-__prefix__-valor_produto_sem_desconto" class="form-control"/>
+                </div>
+                <button type="button" class="btn-remove-form">Remover form</button>
             </div>
-            <button type="button" class="btn-add-form" id="add-ocorrencia-btn">Adicionar Ocorrência</button>
-        </details>
+        </div>
+    </div>
 
-        <button type="submit" class="btn-submit">Salvar Venda</button>
-    </form>
-</div>
+    <!-- Template invisível Ocorrência -->
+    <div id="empty-ocorrencia-form-template" style="display: none;">
+        <div class="formset-grupo">
+            <div class="form-row">
+                <label for="id_ocorrencias-__prefix__-titulo_ocorrencia">Título</label>
+                <input type="text" name="ocorrencias-__prefix__-titulo_ocorrencia"
+                       id="id_ocorrencias-__prefix__-titulo_ocorrencia" class="form-control"/>
 
-<!-- Template invisível Produto -->
-<div id="empty-produto-form-template" style="display: none;">
-    <div class="formset-grupo">
-        <div class="form-row">
-            <div class="form-group col-md-6">
-                <label>Produto</label>
-                <input type="text" name="produtos-__prefix__-Produto" class="form-control">
-            </div>
-            <div class="form-group col-md-6">
-                <label>Tipo</label>
-                <select name="produtos-__prefix__-tipo" class="form-control">
+                <label for="id_ocorrencias-__prefix__-tipo_ocorrencia">Tipo ocorrência</label>
+                <select name="ocorrencias-__prefix__-tipo_ocorrencia" id="id_ocorrencias-__prefix__-tipo_ocorrencia"
+                        class="form-control">
                     <option value="">---------</option>
-                    <option value="Contato-diaria">Contato-diaria</option>
-                    <option value="Contato-Quinzenal">Contato-Quinzenal</option>
-                    <option value="Solar">Solar</option>
-                    <option value="Receituario">Receituario</option>
-                    <option value="Multifocal">Multifocal</option>
-                    <option value="Visão simples">Visão simples</option>
+                    <option value="Troca-compra errada">Troca compra Errada</option>
+                    <option value="Troca-Garantia">Troca-Garantia</option>
+                    <option value="Atualização">Atualização</option>
+                    <option value="Manutenção">Manutenção</option>
                 </select>
+
+                <label for="id_ocorrencias-__prefix__-ocorrencia">Ocorrência</label>
+                <textarea name="ocorrencias-__prefix__-ocorrencia" id="id_ocorrencias-__prefix__-ocorrencia"
+                          class="form-control"></textarea>
+
+                <button type="button" class="btn-remove-form">Remover form</button>
             </div>
-            <div class="form-group col-md-6">
-                <label>Valor de venda</label>
-                <input type="number" step="0.01" name="produtos-__prefix__-Valor_venda" class="form-control">
-            </div>
-            <div class="form-group col-md-6">
-                <label>Valor original</label>
-                <input type="number" step="0.01" name="produtos-__prefix__-valor_produto_sem_desconto" class="form-control">
-            </div>
-            <button type="button" class="btn-remove-form">Remover form</button>
         </div>
     </div>
-</div>
 
-<!-- Template invisível Ocorrência -->
-<div id="empty-ocorrencia-form-template" style="display: none;">
-    <div class="formset-grupo">
-        <div class="form-row">
-            <label>Título</label>
-            <input type="text" name="ocorrencias-__prefix__-titulo" class="form-control">
-            <label>Tipo ocorrência</label>
-            <input type="text" name="ocorrencias-__prefix__-tipo" class="form-control">
-            <label>Ocorrência</label>
-            <textarea name="ocorrencias-__prefix__-descricao" class="form-control"></textarea>
-            <button type="button" class="btn-remove-form">Remover form</button>
-        </div>
-    </div>
-</div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            function updateFormIndices(containerId, prefix) {
+                const container = document.getElementById(containerId);
+                const forms = container.querySelectorAll(".formset-grupo");
+                forms.forEach((form, index) => {
+                    const inputs = form.querySelectorAll("input, select, textarea, label");
+                    inputs.forEach(input => {
+                        if (input.hasAttribute("name")) {
+                            input.name = input.name.replace(new RegExp(prefix + "-\\d+-"), prefix + "-" + index + "-");
+                        }
+                        if (input.hasAttribute("id")) {
+                            input.id = input.id.replace(new RegExp(prefix + "-\\d+-"), prefix + "-" + index + "-");
+                        }
+                        if (input.tagName.toLowerCase() === "label" && input.htmlFor) {
+                            input.htmlFor = input.htmlFor.replace(new RegExp(prefix + "-\\d+-"), prefix + "-" + index + "-");
+                        }
+                    });
+                });
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    function updateFormIndices(containerId, prefix) {
-        const container = document.getElementById(containerId);
-        const forms = container.querySelectorAll(".formset-grupo");
-        forms.forEach((form, index) => {
-            const inputs = form.querySelectorAll("input, select, textarea, label");
-            inputs.forEach(input => {
-                if (input.hasAttribute("name")) {
-                    input.name = input.name.replace(new RegExp(prefix + "-\\d+-"), prefix + "-" + index + "-");
+                const totalFormsInput = document.querySelector(`input[name="${prefix}-TOTAL_FORMS"]`);
+                if (totalFormsInput) {
+                    totalFormsInput.value = forms.length;
                 }
-                if (input.hasAttribute("id")) {
-                    input.id = input.id.replace(new RegExp(prefix + "-\\d+-"), prefix + "-" + index + "-");
-                }
-                if (input.tagName.toLowerCase() === "label" && input.htmlFor) {
-                    input.htmlFor = input.htmlFor.replace(new RegExp(prefix + "-\\d+-"), prefix + "-" + index + "-");
+            }
+
+            const addProdutoBtn = document.getElementById("add-produto-btn");
+            const produtosFormsetDiv = document.getElementById("produtos-formset");
+            const totalProdutosInput = document.querySelector('input[name="produtos-TOTAL_FORMS"]');
+            const produtoTemplate = document.getElementById("empty-produto-form-template").innerHTML;
+
+            addProdutoBtn && addProdutoBtn.addEventListener("click", function () {
+                const totalForms = parseInt(totalProdutosInput.value);
+                const newForm = produtoTemplate.replace(/__prefix__/g, totalForms);
+                produtosFormsetDiv.insertAdjacentHTML("beforeend", newForm);
+                totalProdutosInput.value = totalForms + 1;
+            });
+
+            const addOcorrenciaBtn = document.getElementById("add-ocorrencia-btn");
+            const ocorrenciasFormsetDiv = document.getElementById("ocorrencias-formset");
+            const totalOcorrenciasInput = document.querySelector('input[name="ocorrencias-TOTAL_FORMS"]');
+            const ocorrenciaTemplate = document.getElementById("empty-ocorrencia-form-template").innerHTML;
+
+            addOcorrenciaBtn && addOcorrenciaBtn.addEventListener("click", function () {
+                const totalForms = parseInt(totalOcorrenciasInput.value);
+                const newForm = ocorrenciaTemplate.replace(/__prefix__/g, totalForms);
+                ocorrenciasFormsetDiv.insertAdjacentHTML("beforeend", newForm);
+                totalOcorrenciasInput.value = totalForms + 1;
+            });
+
+            document.body.addEventListener("click", function (e) {
+                if (e.target.classList.contains("btn-remove-form")) {
+                    const grupo = e.target.closest(".formset-grupo");
+                    const containerId = grupo.parentElement.id;
+
+                    grupo.remove();
+
+                    if (containerId === "produtos-formset") {
+                        updateFormIndices("produtos-formset", "produtos");
+                    } else if (containerId === "ocorrencias-formset") {
+                        updateFormIndices("ocorrencias-formset", "ocorrencias");
+                    }
                 }
             });
         });
-
-        const totalFormsInput = document.querySelector(`input[name="${prefix}-TOTAL_FORMS"]`);
-        if (totalFormsInput) {
-            totalFormsInput.value = forms.length;
-        }
-    }
-
-    const addProdutoBtn = document.getElementById("add-produto-btn");
-    const produtosFormsetDiv = document.getElementById("produtos-formset");
-    const totalProdutosInput = document.querySelector('input[name="produtos-TOTAL_FORMS"]');
-    const produtoTemplate = document.getElementById("empty-produto-form-template").innerHTML;
-
-    addProdutoBtn && addProdutoBtn.addEventListener("click", function () {
-        const totalForms = parseInt(totalProdutosInput.value);
-        const newForm = produtoTemplate.replace(/__prefix__/g, totalForms);
-        produtosFormsetDiv.insertAdjacentHTML("beforeend", newForm);
-        totalProdutosInput.value = totalForms + 1;
-    });
-
-    const addOcorrenciaBtn = document.getElementById("add-ocorrencia-btn");
-    const ocorrenciasFormsetDiv = document.getElementById("ocorrencias-formset");
-    const totalOcorrenciasInput = document.querySelector('input[name="ocorrencias-TOTAL_FORMS"]');
-    const ocorrenciaTemplate = document.getElementById("empty-ocorrencia-form-template").innerHTML;
-
-    addOcorrenciaBtn && addOcorrenciaBtn.addEventListener("click", function () {
-        const totalForms = parseInt(totalOcorrenciasInput.value);
-        const newForm = ocorrenciaTemplate.replace(/__prefix__/g, totalForms);
-        ocorrenciasFormsetDiv.insertAdjacentHTML("beforeend", newForm);
-        totalOcorrenciasInput.value = totalForms + 1;
-    });
-
-    document.body.addEventListener("click", function (e) {
-        if (e.target.classList.contains("btn-remove-form")) {
-            const grupo = e.target.closest(".formset-grupo");
-            const containerId = grupo.parentElement.id;
-
-            grupo.remove();
-
-            if (containerId === "produtos-formset") {
-                updateFormIndices("produtos-formset", "produtos");
-            } else if (containerId === "ocorrencias-formset") {
-                updateFormIndices("ocorrencias-formset", "ocorrencias");
-            }
-        }
-    });
-});
-</script>
+    </script>
 {% endblock %}

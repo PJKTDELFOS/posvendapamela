@@ -40,8 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'posvendasapp',
-    'crispy_bootstrap4',
     'crispy_forms',
+    'crispy_bootstrap4',
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"

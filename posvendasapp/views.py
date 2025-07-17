@@ -16,7 +16,7 @@ from posvendasapp.services.search_map import mapa_modelos
 from datetime import date,timedelta
 from django.core.paginator import Paginator
 from django.http import  HttpResponseBadRequest
-from django.db.models import Q,Sum, F, Value
+from django.db.models import Q,Sum, F, Value,Prefetch
 from django.db.models.functions import Coalesce
 
 # Create your views here.
@@ -213,7 +213,7 @@ class Cadastrar_Vendas(LoginRequiredMixin, View):
                 vendedor=vendedor,
                 request=request
             )
-            return redirect('posvendasapp:tabela_cliente')
+            return redirect('posvendasapp:tabela_venda')
         except ValidationError as e:
             return render(request, self.template_name, {
                 'form_venda': form_venda,
@@ -258,12 +258,12 @@ class Atualizar_Vendas(LoginRequiredMixin, View):
                 vendedor=vendedor,
                 request=request
             )
-            return redirect('posvendasapp:tabela_cliente')
+            return redirect('posvendasapp:tabela_venda')
         except ValidationError as e:
             form_venda = Vendaforms(request.POST, instance=venda, cliente=cliente, vendedor=vendedor)
-            produto_formset = ProdutoFormSet(request.POST, instance=venda,prefix='produtos')
-            ocorrencia_formset = OcorrenciaFormSet(request.POST, instance=venda,prefix='ocorrencias')
-            ocorrencia_formset.request = request
+            produto_formset = ProdutoFormSet(request.POST, instance=venda, prefix='produtos')
+            ocorrencia_formset = OcorrenciaFormSet(request.POST, instance=venda, prefix='ocorrencias')
+            ocorrencia_formset.request = request  # aqui também
 
             return render(request, self.template_name, {
                 'form_venda': form_venda,
@@ -376,8 +376,9 @@ class Listar_Vendas(LoginRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
+        produtos_prefetch = Prefetch('produtos_vendidos')  # garantir prefetch
         qs = Vendas.objects.select_related('cliente', 'vendedor') \
-            .prefetch_related('produtos_vendidos', 'ocorrencias_venda')
+            .prefetch_related(produtos_prefetch, 'ocorrencias_venda')
 
         nome = self.request.GET.get('nome', '')
         valor = self.request.GET.get('valor', '')
@@ -389,22 +390,28 @@ class Listar_Vendas(LoginRequiredMixin, ListView):
         elif nome == 'za':
             return qs.order_by('-cliente__Nome')
 
-        # Ordenação por valor
+        # Ordenação por valor total (manual)
         if valor in ['asc', 'dec']:
-            order = 'valor_total_venda' if valor == 'asc' else '-valor_total_venda'
-            return qs.order_by(order)
+            lista = list(qs)  # Força avaliação com prefetch aplicado
+            for venda in lista:
+                list(venda.produtos_vendidos.all())  # Força carregar os produtos aqui
 
-        # Ordenação por data de retorno (calculada) - aqui vira lista
+            lista.sort(
+                key=lambda v: v.valor_total_venda if v.valor_total_venda is not None else 0,
+                reverse=(valor == 'dec')
+            )
+            return lista
+
+        # Ordenação por data de retorno (manual)
         if retorno in ['asc', 'dec']:
             lista = list(qs)
             lista.sort(
                 key=lambda v: (v.Data_venda + timedelta(days=v.Previsao))
-                              if v.Data_venda and v.Previsao else date.min,
+                if v.Data_venda and v.Previsao else date.min,
                 reverse=(retorno == 'dec')
             )
-            return lista  # paga manualmente depois
+            return lista
 
-        # Default
         return qs.order_by('-id')
 
     def get_context_data(self, **kwargs):
@@ -422,15 +429,62 @@ class Listar_Vendas(LoginRequiredMixin, ListView):
             context['is_paginated'] = page_obj.has_other_pages()
 
         return context
-
-
-class DeleteVenda(LoginRequiredMixin,DeleteView):
+class Delete_Venda(LoginRequiredMixin,DeleteView):
     model = Vendas
-    success_url = reverse_lazy('posvendasapp:tabela_vendas')
-    pk_url_kwarg = 'Venda_pk'
+    success_url = reverse_lazy('posvendasapp:tabela_venda')
+    pk_url_kwarg = 'pk'
+    template_name = 'posvendasapp/confirmação_delete_venda.html'
 
     def post(self, request, *args, **kwargs):
-        messages.success(self.request, 'Venda deletado com sucesso!')
+        messages.success(self.request, 'cliente deletado com sucesso com sucesso!')
         return super().post(request, *args, **kwargs)
 
 
+class Listar_Produtos_Vendidos(LoginRequiredMixin, ListView):
+    model = Produtos
+    template_name = 'posvendasapp/tabela_produtos_vendidos.html'
+    context_object_name = 'produtos'
+    paginate_by = 10
+
+    # def get_queryset(self):
+    #     produtos_prefetch = Prefetch('produtos_vendidos')  # garantir prefetch
+    #     qs = Vendas.objects.select_related('cliente', 'vendedor') \
+    #         .prefetch_related(produtos_prefetch, 'ocorrencias_venda')
+    #
+    #     nome = self.request.GET.get('nome', '')
+    #     valor = self.request.GET.get('valor', '')
+    #     retorno = self.request.GET.get('retorno', '')
+    #
+    #     # Ordenação por nome
+    #     if nome == 'az':
+    #         return qs.order_by('cliente__Nome')
+    #     elif nome == 'za':
+    #         return qs.order_by('-cliente__Nome')
+    #
+    #     # Ordenação por valor total (manual)
+    #     if valor in ['asc', 'dec']:
+    #         lista = list(qs)  # Força avaliação com prefetch aplicado
+    #         for venda in lista:
+    #             list(venda.produtos_vendidos.all())  # Força carregar os produtos aqui
+    #
+    #         lista.sort(
+    #             key=lambda v: v.valor_total_venda if v.valor_total_venda is not None else 0,
+    #             reverse=(valor == 'dec')
+    #         )
+    #         return lista
+    #
+    #     # Ordenação por data de retorno (manual)
+    #     if retorno in ['asc', 'dec']:
+    #         lista = list(qs)
+    #         lista.sort(
+    #             key=lambda v: (v.Data_venda + timedelta(days=v.Previsao))
+    #             if v.Data_venda and v.Previsao else date.min,
+    #             reverse=(retorno == 'dec')
+    #         )
+    #         return lista
+    #
+    #     return qs.order_by('-id')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context

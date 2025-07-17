@@ -79,6 +79,14 @@ class Vendaforms(forms.ModelForm):
             self.add_error(None, ' falta vendedor')
         return cleaned_data
 
+class ProdutoForm(forms.ModelForm):
+    class Meta:
+        model = Produtos
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['Valor_venda'].required = True
 
 class OcorrenciaForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
@@ -116,15 +124,23 @@ class ProdutoFormSetCustom(BaseInlineFormSet):
 
 
 class OcorrenciaInlineFormSet(BaseInlineFormSet):
-    def get_form_kwargs(self, index):
-        kwargs = super().get_form_kwargs(index)
-        kwargs['request'] = self.request
-        return kwargs
+
+    def __init__(self, *args, request=None, **kwargs):
+        self.request = request
+        super().__init__(*args, **kwargs)
+
+    def _construct_form(self, i, **kwargs):
+        # Passa o request para o form
+        form = super()._construct_form(i, **kwargs)
+        form.request = self.request
+        return form
 
     def save_new(self, form, commit=True):
-        obj = super().save_new(form, commit=False)
+        # Cria a instância sem salvar ainda
+        obj = form.save(commit=False)
         obj.venda = self.instance
 
+        # Associa vendedor à equipe do usuário logado
         if self.request and hasattr(self.request.user, 'equipe'):
             obj.vendedor = self.request.user.equipe
 
@@ -136,7 +152,8 @@ class OcorrenciaInlineFormSet(BaseInlineFormSet):
 ProdutoFormSet = inlineformset_factory(
     Vendas,Produtos,
     fields='__all__',
-    extra=1,can_delete=True,
+    extra=0,can_delete=True,
+    form=ProdutoForm,
     formset=ProdutoFormSetCustom,
 )
 
@@ -144,7 +161,7 @@ OcorrenciaFormSet = inlineformset_factory(
     Vendas, Ocorrencia,
     form=OcorrenciaForm,
     formset=OcorrenciaInlineFormSet,
-    extra=1, can_delete=True
+    extra=0, can_delete=True
 )
 
 

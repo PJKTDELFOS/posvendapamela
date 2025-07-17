@@ -100,12 +100,18 @@ class Main_services:
     def atualizar_venda(dados_venda,dados_produto,dados_ocorrencia,venda,cliente,vendedor,request=None):
         vendas_form=Vendaforms(dados_venda,instance=venda,cliente=cliente,vendedor=vendedor)
         produto_formset=ProdutoFormSet(dados_produto,instance=venda,prefix='produtos')
-        ocorrencia_formset=OcorrenciaFormSet(dados_ocorrencia,instance=venda,request=request,prefix='ocorrencias')
+        ocorrencia_formset = OcorrenciaFormSet(dados_ocorrencia, instance=venda, prefix='ocorrencias')
+        ocorrencia_formset.request = request
+
         if not vendas_form.is_valid():
+            print('erro na venda service',vendas_form.errors)
             raise ValidationError(vendas_form.errors)
         if not produto_formset.is_valid():
+            print('erro no produto service',produto_formset.errors)
             raise ValidationError(produto_formset.errors)
         if not ocorrencia_formset.is_valid():
+            print('erro na ocorrencia service',ocorrencia_formset.errors)
+            print(ocorrencia_formset.data)
             raise ValidationError(ocorrencia_formset.errors)
 
         with transaction.atomic():

@@ -24,35 +24,38 @@ from .import views
 app_name = 'posvendasapp'
 
 urlpatterns = [
+#_____________________________________________________________________________________________________________#
+    #URLS ACESSORIAS
     path('login', views.Login.as_view(), name='login_sistema'),
     path('logout', views.Logout.as_view(),name='logout'),
      path('', views.testelogin, name='menuinicial'),
-
     path('busca', views.Busca.as_view(), name='busca_dinamica'),
 
-
+#_____________________________________________________________________________________________________________#
     #equipe
     path('tabela_equipe/', views.Listar_Staff.as_view(), name='tabela_equipe'),
     path('tabela_equipe/<int:pk>/editar', views.Atualizar_membro_Equipe.as_view(), name='atualizar_equipe'),
     path('cadastrar_equipe', views.CadastrarEquipe.as_view(), name='cadastrar_equipe'),
     path('tabela_equipe/<int:pk>/deletar', views.DeleteEquipe.as_view(), name='deletar_equipe'),
-
-
+#_____________________________________________________________________________________________________________#
     #cliente
     path('tabela_cliente/', views.Listar_Clientes.as_view(), name='tabela_cliente'),
     path('cadastrar_cliente', views.Cadastrar_Cliente.as_view(), name='cadastrar_cliente'),
     path('tabela_cliente/<int:pk>/editar', views.Atualizar_Cliente.as_view(), name='atualizar_cliente'),
     path('tabela_cliente/<int:pk>/deletar', views.DeleteCliente.as_view(), name='deletar_cliente'),
-
-
-
-
-
-
+#_____________________________________________________________________________________________________________#
     #vendas
-
     path('tabela_venda/', views.Listar_Vendas.as_view(), name='tabela_venda'),
-    path('cadastrar_venda/<int:pk>', views.Cadastrar_Vendas.as_view(), name='cadastrar_venda'),
+    path('tabela_cliente/<int:cliente_pk>/cadastrar_venda/', views.Cadastrar_Vendas.as_view(), name='cadastrar_venda'),
+    path('tabela_venda/<int:pk>/editar', views.Atualizar_Vendas.as_view(), name='atualizar_venda'),
+    path('tabela_venda/<int:pk>/deletar', views.Delete_Venda.as_view(), name='deletar_venda'),
+#_____________________________________________________________________________________________________________#
+    #produtos
+    path('tabela_produtos_vendidos/', views.Listar_Produtos_Vendidos.as_view(), name='tabela_produtos_vendidos'),
+#_____________________________________________________________________________________________________________#
+    #ocorrencias
+
+#_____________________________________________________________________________________________________________#
 
 
 
@@ -61,16 +64,6 @@ urlpatterns = [
 
 
 
-    #atualização
-
-
-
-
-    #deletar
-
-
-
-    #visualizar registros individuais
 
 ]
 if settings.DEBUG:

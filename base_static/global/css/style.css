@@ -614,3 +614,9 @@ div[id^="div_id_"][id$="-DELETE"] {
 .btn-ordenar:hover {
   background-color: #0056b3;
 }
+
+.pagination .current {
+    font-weight: bold;
+    color: #007bff; /* azul, por exemplo */
+    font-size: 1.1rem; /* opcional */
+}
