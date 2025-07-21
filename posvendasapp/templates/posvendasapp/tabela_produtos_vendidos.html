@@ -4,7 +4,49 @@
     <div class="list-container">
         <h2>LISTA DE VENDAS</h2>
 
+        <form method="get" class="filtros-container">
+    <fieldset>
+        <legend>Ordenar por:</legend>
 
+        <label>
+            <input type="radio" name="sort" value="desconto"
+                   {% if request.GET.sort == 'desconto' %}checked{% endif %}>
+            Desconto (maior primeiro)
+        </label>
+
+        <label>
+            <input type="radio" name="sort" value="desconto_asc"
+                   {% if request.GET.sort == 'desconto_asc' %}checked{% endif %}>
+            Desconto (menor primeiro)
+        </label>
+
+        <label>
+            <input type="radio" name="sort" value="Valor_venda"
+                   {% if request.GET.sort == 'Valor_venda' %}checked{% endif %}>
+            Valor vendido (maior primeiro)
+        </label>
+
+        <label>
+            <input type="radio" name="sort" value="Valor_venda_asc"
+                   {% if request.GET.sort == 'Valor_venda_asc' %}checked{% endif %}>
+            Valor vendido (menor primeiro)
+        </label>
+
+        <label>
+            <input type="radio" name="sort" value="valor_produto_sem_desconto"
+                   {% if request.GET.sort == 'valor_produto_sem_desconto' %}checked{% endif %}>
+            Valor sem desconto (maior primeiro)
+        </label>
+
+        <label>
+            <input type="radio" name="sort" value="valor_produto_sem_desconto_asc"
+                   {% if request.GET.sort == 'valor_produto_sem_desconto_asc' %}checked{% endif %}>
+            Valor sem desconto (menor primeiro)
+        </label>
+
+        <button type="submit">Filtrar</button>
+    </fieldset>
+</form>
         <!-- Tabela de vendas -->
         <table class="list-table">
             <thead>
@@ -36,7 +78,7 @@
                         R$ {{ produto.valor_produto_sem_desconto|floatformat:2|default:"0.00" }}
                     </td>
                     <td data-label="Desconto">
-                         {{ produto.desconto }}%
+                        {{ produto.desconto }}
                     </td>
                     <td data-label="Valor Original">
                         R$ {{ produto.Valor_venda|floatformat:2|default:"0.00" }}

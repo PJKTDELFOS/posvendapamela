@@ -39,6 +39,7 @@
       <tr>
         <th>Nome</th>
         <th>Contato</th>
+        <th>CPF</th>
         <th>Valor Total de Vendas</th>
         <th>Ações</th>
       </tr>
@@ -48,6 +49,7 @@
       <tr>
         <td>{{ cliente.Nome }}</td>
         <td>{{ cliente.contato }}</td>
+        <td>{{ cliente.cpf }}</td>
         <td>R$ {{ cliente.valor_total_venda_do_cliente|floatformat:2 }}</td>
         <td class="action-buttons">
           <a href="{% url 'posvendasapp:atualizar_cliente' cliente.pk %}" class="edit">Editar</a>

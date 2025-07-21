@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import User
 from utils import tools_utils
@@ -28,10 +29,22 @@ class Equipe(models.Model):
 class Clientes(models.Model):
     Nome=models.CharField(default=None, max_length=255,blank=False,null=False,verbose_name='Nome')
     contato=models.CharField(default=None, max_length=255,blank=False,null=False,verbose_name='Contato')
-    Arquivos=models.FileField(upload_to=tools_utils.cliente_upload_path,blank=False,null=False,verbose_name='Arquivos')
+    cpf = models.CharField(max_length=14,blank=False,null=False,verbose_name='CPF',unique=True, )
+    Arquivos=models.FileField(upload_to=tools_utils.cliente_upload_path,blank=True,null=True,verbose_name='Arquivos')
 
     def __str__(self):
         return self.Nome
+
+    def clean(self):
+        error_messages={}
+        cpf_valido=tools_utils.valida_cpf(self.cpf)
+        if not cpf_valido:
+            error_messages['cpf']='digite um cpf valido'
+
+        if error_messages:
+            raise ValidationError(error_messages)
+
+
 
     @property
     def valor_total_venda_do_cliente(self):

@@ -1,3 +1,4 @@
+from django.views.generic import DetailView
 from posvendasapp.services.Services import Main_services
 from django.contrib.auth import  logout
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -15,17 +16,18 @@ from.vendasforms import *
 from posvendasapp.services.search_map import mapa_modelos
 from datetime import date,timedelta
 from django.core.paginator import Paginator
-from django.http import  HttpResponseBadRequest
-from django.db.models import Q,Sum, F, Value,Prefetch
-from django.db.models.functions import Coalesce
-
-# Create your views here.
+from django.db.models import F, FloatField, ExpressionWrapper,Prefetch
 
 
 
 # Create your views here.
 
 
+
+# Create your views here.
+
+
+#views de suporte_______________________________________________________________________________________________________
 class Login(LoginView):
     template_name = 'posvendasapp/tela_login.html'
     success_url = reverse_lazy('posvendasapp:menuinicial')
@@ -33,7 +35,6 @@ class Login(LoginView):
 
     def get_success_url(self):
         return self.success_url
-
 class Logout(LoginRequiredMixin,View):
     def get(self,*args,**kwargs):
         logout(self.request)
@@ -41,8 +42,30 @@ class Logout(LoginRequiredMixin,View):
 @login_required
 def testelogin(request):
     return render(request, 'posvendasapp/tela_inicial_vazia.html')
+class Busca(LoginRequiredMixin,View):
+
+    def get(self, request):
+        termo=request.GET.get('q','').strip()
+        resultados={}
+
+        if termo:
+            for modelo_nome,info in mapa_modelos.items():
+                queryset=info['queryset']
+                campos=info['campos']
+                qs_resultados=Main_services.busca_centralizada(queryset,termo,campos)
+
+                if qs_resultados.exists():
+                    resultados[modelo_nome]=qs_resultados
 
 
+
+
+        return render(request, f'posvendasapp/busca_dinamica.html', {
+            'termo': termo,
+            'resultados': resultados,
+        })
+
+#views de equipe________________________________________________________________________________________________________
 class CadastrarEquipe(View):
     template_name = 'posvendasapp/cadastro_att_equipe.html'
     def get(self, request, *args, **kwargs):
@@ -67,8 +90,6 @@ class CadastrarEquipe(View):
                 'form_equipe': form_equipe,
                 'modo':'criação',
                 'errors':errors,})
-
-
 class Atualizar_membro_Equipe(LoginRequiredMixin,View):
     template_name = 'posvendasapp/cadastro_att_equipe.html'
     def get(self, request, pk):
@@ -103,9 +124,6 @@ class Atualizar_membro_Equipe(LoginRequiredMixin,View):
                 'modo':'edição',
                 'errors': e.message_dict if hasattr(e, 'message_dict') else e.messages
                 })
-
-
-
 class DeleteEquipe(LoginRequiredMixin,DeleteView):
     model = Equipe
     success_url = reverse_lazy('posvendasapp:tabela_equipe')
@@ -115,8 +133,30 @@ class DeleteEquipe(LoginRequiredMixin,DeleteView):
     def post(self, request, *args, **kwargs):
         messages.success(self.request, 'Membro da equipe deletado com sucesso com sucesso!')
         return super().post(request, *args, **kwargs)
+class Listar_Staff(ListView):
+    model = Equipe
+    template_name = 'posvendasapp/tabela_equipe.html'
+    context_object_name = 'equipe'
+    paginate_by = 10
 
+    def get_queryset(self):
+        queryset = Equipe.objects.order_by('Usuario')
+        cargo = self.request.GET.get('Cargo', 'None')
+        if cargo != 'None' and cargo:
+            queryset = queryset.filter(Cargo=cargo)
+        return queryset
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['cargos'] = Equipe.objects.values_list('Cargo', flat=True).distinct()
+        return context
+
+class Membro_Equipe(DetailView,LoginRequiredMixin):
+    model = Equipe
+    template_name = 'posvendasapp/venda_ficha.html'
+    
+
+#views de cliente_______________________________________________________________________________________________________
 class Cadastrar_Cliente(LoginRequiredMixin,View):
     template_name = 'posvendasapp/cadastro_att_cliente.html'
 
@@ -137,7 +177,6 @@ class Cadastrar_Cliente(LoginRequiredMixin,View):
                 'cliente_form': form_cliente,
                 'modo':'criação'
             })
-
 class Atualizar_Cliente(LoginRequiredMixin,View):
     template_name = 'posvendasapp/cadastro_att_cliente.html'
     def get(self, request, *args, **kwargs):
@@ -161,8 +200,6 @@ class Atualizar_Cliente(LoginRequiredMixin,View):
                 'modo':'edição'
 
             })
-
-
 class DeleteCliente(LoginRequiredMixin,DeleteView):
     model = Clientes
     success_url = reverse_lazy('posvendasapp:tabela_cliente')
@@ -172,8 +209,36 @@ class DeleteCliente(LoginRequiredMixin,DeleteView):
     def post(self, request, *args, **kwargs):
         messages.success(self.request, 'cliente deletado com sucesso com sucesso!')
         return super().post(request, *args, **kwargs)
+class Listar_Clientes(ListView):
+    model = Clientes
+    template_name = 'posvendasapp/tabela_clientes.html'
+    context_object_name = 'cliente'
+    paginate_by = 10
 
+    def get_queryset(self):
+        queryset = Clientes.objects.all()
+        sort_param = self.request.GET.get('sort', '')
 
+        # Aplica ordenação manual posterior com base no total
+        if sort_param in ['valor_total', 'valor_total_asc']:
+            queryset = list(queryset)
+            queryset.sort(
+                key=lambda cliente: cliente.valor_total_venda_do_cliente,
+                reverse=(sort_param == 'valor_total')
+            )
+        elif sort_param == 'nome':
+            queryset = queryset.order_by('Nome')
+        elif sort_param == 'nome_desc':
+            queryset = queryset.order_by('-Nome')
+        else:
+            queryset = queryset.order_by('-id')
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context
+#views de vendas_______________________________________________________________________________________________________
 class Cadastrar_Vendas(LoginRequiredMixin, View):
     template_name = 'posvendasapp/cadastro_vendas.html'
 
@@ -222,7 +287,6 @@ class Cadastrar_Vendas(LoginRequiredMixin, View):
                 'errors': e,
                 'modo': 'criação'
             })
-
 class Atualizar_Vendas(LoginRequiredMixin, View):
     template_name = 'posvendasapp/cadastro_vendas.html'
 
@@ -272,103 +336,6 @@ class Atualizar_Vendas(LoginRequiredMixin, View):
                 'errors': e,
                 'modo': 'edição'
             })
-
-
-
-class DeleteProduto(LoginRequiredMixin,DeleteView):
-    model = Vendas
-    success_url = reverse_lazy('posvendasapp:tabela_vendas')
-    pk_url_kwarg = 'produto_pk'
-
-    def post(self, request, *args, **kwargs):
-        messages.success(self.request, 'produto deletado com sucesso!')
-        return super().post(request, *args, **kwargs)
-
-class DeleteOcorrencia(LoginRequiredMixin,DeleteView):
-    model = Vendas
-    success_url = reverse_lazy('posvendasapp:tabela_vendas')
-    pk_url_kwarg = 'ocorrencia_pk'
-
-    def post(self, request, *args, **kwargs):
-        messages.success(self.request, 'Ocorrencia deletado com sucesso!')
-        return super().post(request, *args, **kwargs)
-
-class Busca(LoginRequiredMixin,View):
-
-    def get(self, request):
-        termo=request.GET.get('q','').strip()
-        resultados={}
-
-        if termo:
-            for modelo_nome,info in mapa_modelos.items():
-                queryset=info['queryset']
-                campos=info['campos']
-                qs_resultados=Main_services.busca_centralizada(queryset,termo,campos)
-
-                if qs_resultados.exists():
-                    resultados[modelo_nome]=qs_resultados
-
-
-
-
-        return render(request, f'posvendasapp/busca_dinamica.html', {
-            'termo': termo,
-            'resultados': resultados,
-        })
-
-
-
-class Listar_Staff(ListView):
-    model = Equipe
-    template_name = 'posvendasapp/tabela_equipe.html'
-    context_object_name = 'equipe'
-    paginate_by = 10
-
-    def get_queryset(self):
-        queryset = Equipe.objects.order_by('Usuario')
-        cargo = self.request.GET.get('Cargo', 'None')
-        if cargo != 'None' and cargo:
-            queryset = queryset.filter(Cargo=cargo)
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['cargos'] = Equipe.objects.values_list('Cargo', flat=True).distinct()
-        return context
-
-
-class Listar_Clientes(ListView):
-    model = Clientes
-    template_name = 'posvendasapp/tabela_clientes.html'
-    context_object_name = 'cliente'
-    paginate_by = 10
-
-    def get_queryset(self):
-        queryset = Clientes.objects.all()
-        sort_param = self.request.GET.get('sort', '')
-
-        # Aplica ordenação manual posterior com base no total
-        if sort_param in ['valor_total', 'valor_total_asc']:
-            queryset = list(queryset)
-            queryset.sort(
-                key=lambda cliente: cliente.valor_total_venda_do_cliente,
-                reverse=(sort_param == 'valor_total')
-            )
-        elif sort_param == 'nome':
-            queryset = queryset.order_by('Nome')
-        elif sort_param == 'nome_desc':
-            queryset = queryset.order_by('-Nome')
-        else:
-            queryset = queryset.order_by('-id')
-
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return context
-
-
-
 class Listar_Vendas(LoginRequiredMixin, ListView):
     model = Vendas
     template_name = 'posvendasapp/tabela_vendas.html'
@@ -438,6 +405,36 @@ class Delete_Venda(LoginRequiredMixin,DeleteView):
     def post(self, request, *args, **kwargs):
         messages.success(self.request, 'cliente deletado com sucesso com sucesso!')
         return super().post(request, *args, **kwargs)
+class DeleteProduto(LoginRequiredMixin,DeleteView):
+    model = Vendas
+    success_url = reverse_lazy('posvendasapp:tabela_vendas')
+    pk_url_kwarg = 'produto_pk'
+
+    def post(self, request, *args, **kwargs):
+        messages.success(self.request, 'produto deletado com sucesso!')
+        return super().post(request, *args, **kwargs)
+class DeleteOcorrencia(LoginRequiredMixin,DeleteView):
+    model = Vendas
+    success_url = reverse_lazy('posvendasapp:tabela_vendas')
+    pk_url_kwarg = 'ocorrencia_pk'
+
+    def post(self, request, *args, **kwargs):
+        messages.success(self.request, 'Ocorrencia deletado com sucesso!')
+        return super().post(request, *args, **kwargs)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class Listar_Produtos_Vendidos(LoginRequiredMixin, ListView):
@@ -446,44 +443,39 @@ class Listar_Produtos_Vendidos(LoginRequiredMixin, ListView):
     context_object_name = 'produtos'
     paginate_by = 10
 
-    # def get_queryset(self):
-    #     produtos_prefetch = Prefetch('produtos_vendidos')  # garantir prefetch
-    #     qs = Vendas.objects.select_related('cliente', 'vendedor') \
-    #         .prefetch_related(produtos_prefetch, 'ocorrencias_venda')
-    #
-    #     nome = self.request.GET.get('nome', '')
-    #     valor = self.request.GET.get('valor', '')
-    #     retorno = self.request.GET.get('retorno', '')
-    #
-    #     # Ordenação por nome
-    #     if nome == 'az':
-    #         return qs.order_by('cliente__Nome')
-    #     elif nome == 'za':
-    #         return qs.order_by('-cliente__Nome')
-    #
-    #     # Ordenação por valor total (manual)
-    #     if valor in ['asc', 'dec']:
-    #         lista = list(qs)  # Força avaliação com prefetch aplicado
-    #         for venda in lista:
-    #             list(venda.produtos_vendidos.all())  # Força carregar os produtos aqui
-    #
-    #         lista.sort(
-    #             key=lambda v: v.valor_total_venda if v.valor_total_venda is not None else 0,
-    #             reverse=(valor == 'dec')
-    #         )
-    #         return lista
-    #
-    #     # Ordenação por data de retorno (manual)
-    #     if retorno in ['asc', 'dec']:
-    #         lista = list(qs)
-    #         lista.sort(
-    #             key=lambda v: (v.Data_venda + timedelta(days=v.Previsao))
-    #             if v.Data_venda and v.Previsao else date.min,
-    #             reverse=(retorno == 'dec')
-    #         )
-    #         return lista
-    #
-    #     return qs.order_by('-id')
+    def get_queryset(self):
+        sort_param = self.request.GET.get('sort', '')
+        queryset = Produtos.objects.all()
+
+        # Ordenações diretas no banco
+        if sort_param == 'Valor_venda':
+            queryset = queryset.order_by('-Valor_venda')
+        elif sort_param == 'Valor_venda_asc':
+            queryset = queryset.order_by('Valor_venda')
+        elif sort_param == 'valor_produto_sem_desconto':
+            queryset = queryset.order_by('-valor_produto_sem_desconto')
+        elif sort_param == 'valor_produto_sem_desconto_asc':
+            queryset = queryset.order_by('valor_produto_sem_desconto')
+        elif sort_param == 'desconto':
+            queryset = queryset.annotate(
+                desconto_calc=ExpressionWrapper(
+                    100 * (F('valor_produto_sem_desconto') - F('Valor_venda')) / F('valor_produto_sem_desconto'),
+                    output_field=FloatField()
+                )
+            ).order_by('-desconto_calc')
+        elif sort_param == 'desconto_asc':
+            queryset = queryset.annotate(
+                desconto_calc=ExpressionWrapper(
+                    100 * (F('valor_produto_sem_desconto') - F('Valor_venda')) / F('valor_produto_sem_desconto'),
+                    output_field=FloatField()
+                )
+            ).order_by('desconto_calc')
+        else:
+            queryset = queryset.order_by('-id')
+
+        return queryset
+
+
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
