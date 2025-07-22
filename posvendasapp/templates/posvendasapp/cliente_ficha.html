@@ -3,7 +3,7 @@
 
 {% block content %}
     <div class="detalhes-membro">
-        <h2>Detalhes do Membro</h2>
+        <h2>Detalhes do Cliente</h2>
 
         <div class="linha-detalhe">
             <span class="campo-label">Cliente:</span>
@@ -20,6 +20,11 @@
         </div>
 
         <div class="linha-detalhe">
+            <span class="campo-label">Vendas ao cliente:</span>
+            <span class="campo-valor">{{ cliente.valor_total_venda_do_cliente }}</span>
+        </div>
+
+        <div class="linha-detalhe">
             <span class="campo-label">Documentos disponíveis:</span>
             {% if cliente.Arquivos %}
                 <span class="campo-valor">
@@ -31,12 +36,11 @@
         </div>
 
 
-        <div class="voltar-area botoes-cliente">
-            <a class="btn-voltar" href="{% url 'posvendasapp:cadastrar_venda'  cliente.pk %}">Cadastrar Venda</a>
-            <a class="btn-voltar" href="{% url 'posvendasapp:atualizar_cliente' cliente.pk %}">Editar</a>
-            <a class="btn-voltar" href="{% url 'posvendasapp:deletar_cliente' cliente.pk %}"> Excluir </a>
-            <a class="btn-voltar" href="{% url 'posvendasapp:tabela_cliente' %}">← Voltar para lista</a>
-
+        <div class="botoes-acao-duas-colunas">
+            <a class="ordenar-btn" href="{% url 'posvendasapp:atualizar_cliente' cliente.pk %}">Editar</a>
+            <a class="ordenar-btn" href="{% url 'posvendasapp:cadastrar_venda' cliente.pk %}">Cadastrar Venda</a>
+            <a class="ordenar-btn" href="{% url 'posvendasapp:deletar_cliente' cliente.pk %}">Excluir</a>
+            <a class="ordenar-btn" href="{% url 'posvendasapp:tabela_cliente' %}">← Voltar para lista</a>
         </div>
     </div>
 
@@ -123,24 +127,24 @@
                 {% endfor %}
                 </tbody>
             </table>
-        <div class="pagination" style="font-size: 20px;">
-            {% if is_paginated %}
-                {% if page_obj.has_previous %}
-                    <a href="?page=1">&laquo; Primeira</a>
-                    <a href="?page={{ page_obj.previous_page_number }}">Anterior</a>
-                {% endif %}
+            <div class="pagination" style="font-size: 20px;">
+                {% if is_paginated %}
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1">&laquo; Primeira</a>
+                        <a href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                    {% endif %}
 
-                <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                    <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
 
-                {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}">Próxima</a>
-                    <a href="?page={{ page_obj.paginator.num_pages }}">Última &raquo;</a>
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}">Próxima</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}">Última &raquo;</a>
+                    {% endif %}
                 {% endif %}
-            {% endif %}
+            </div>
         </div>
+
     </div>
-
-        </div>
 
 
     <!-- Script de controle de ordenação -->

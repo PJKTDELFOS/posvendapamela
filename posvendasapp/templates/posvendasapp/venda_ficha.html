@@ -1,10 +1,204 @@
 {% extends "global/base.html" %}
 
 
-{%block content%}
+{% block content %}
+    <div class="detalhes-membro">
+        <h2>Detalhes Da Venda</h2>
 
-<p>
-    estou no cliente ficha uma coisa escr
-</p>
+        <div class="linha-detalhe">
+            <span class="campo-label">Cliente:</span>
+            <span class="campo-valor">{{ venda.cliente.Nome }}</span>
+        </div>
+        <div class="linha-detalhe">
+            <span class="campo-label">Vendedor:</span>
+            <span class="campo-valor">{{ venda.vendedor.Usuario.username }}  </span>
+        </div>
+
+        <div class="linha-detalhe">
+            <span class="campo-label">CPF:</span>
+            <span class="campo-valor">{{ venda.cliente.cpf }}</span>
+        </div>
+
+        <div class="linha-detalhe">
+            <span class="campo-label">valor total de venda:</span>
+            <span class="campo-valor">{{ venda.valor_total_venda }}</span>
+        </div>
+
+        <div class="linha-detalhe">
+            <span class="campo-label">Data da venda:</span>
+            <span class="campo-valor">{{ venda.Data_venda |date:"d/m/Y" }}</span>
+        </div>
+
+        <div class="linha-detalhe">
+            <span class="campo-label">Previsao de retorno:</span>
+            <span class="campo-valor">{{ venda.previsao_de_retorno }}</span>
+        </div>
+
+
+        <div class="botoes-acao-duas-colunas">
+            <!-- Botão Editar -->
+            <a class="btn btn-editar" href="{% url 'posvendasapp:atualizar_venda' venda.pk %}">Editar</a>
+
+            <!-- Botão Excluir -->
+            <form method="post"
+                  class="form-excluir"
+                  action="{% url 'posvendasapp:deletar_venda' venda.pk %}"
+                  onsubmit="if(confirm('Deseja realmente excluir este produto?')) { this.querySelector('button').disabled = true; return true; } else { return false; }">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-excluir">Excluir</button>
+            </form>
+
+            <!-- Botão Voltar -->
+            <a class="btn btn-voltar" href="{% url 'posvendasapp:tabela_cliente' %}">← Voltar para lista</a>
+        </div>
+    </div>
+    <div class="list-container">
+        <h2>LISTA DE PRODUTOS VENDIDOS</h2>
+
+        <form method="get" class="filtros-container">
+            <fieldset>
+                <legend>Ordenar por:</legend>
+
+                <label>
+                    <input type="radio" name="sort" value="desconto"
+                           {% if request.GET.sort == 'desconto' %}checked{% endif %}>
+                    Desconto (maior primeiro)
+                </label>
+
+                <label>
+                    <input type="radio" name="sort" value="desconto_asc"
+                           {% if request.GET.sort == 'desconto_asc' %}checked{% endif %}>
+                    Desconto (menor primeiro)
+                </label>
+
+                <label>
+                    <input type="radio" name="sort" value="Valor_venda"
+                           {% if request.GET.sort == 'Valor_venda' %}checked{% endif %}>
+                    Valor vendido (maior primeiro)
+                </label>
+
+                <label>
+                    <input type="radio" name="sort" value="Valor_venda_asc"
+                           {% if request.GET.sort == 'Valor_venda_asc' %}checked{% endif %}>
+                    Valor vendido (menor primeiro)
+                </label>
+
+                <label>
+                    <input type="radio" name="sort" value="valor_produto_sem_desconto"
+                           {% if request.GET.sort == 'valor_produto_sem_desconto' %}checked{% endif %}>
+                    Valor sem desconto (maior primeiro)
+                </label>
+
+                <label>
+                    <input type="radio" name="sort" value="valor_produto_sem_desconto_asc"
+                           {% if request.GET.sort == 'valor_produto_sem_desconto_asc' %}checked{% endif %}>
+                    Valor sem desconto (menor primeiro)
+                </label>
+
+                <button type="submit">Filtrar</button>
+            </fieldset>
+        </form>
+        <!-- Tabela de vendas -->
+        <table class="list-table">
+            <thead>
+            <tr>
+                <th>Produto-id</th>
+                <th>Venda-id</th>
+                <th>Cliente-Comprador</th>
+                <th>Data da Venda</th>
+                <th>Produto</th>
+                <th>Tipo de Produto</th>
+                <th>Vendedor</th>
+                <th>Valor sem desconto</th>
+                <th>Desconto</th>
+                <th>Valor De venda</th>
+                <th>Ações</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for produto in produtos %}
+                <tr>
+                    <td data-label="id">{{ produto.pk }}</td>
+                    <td data-label="id">{{ produto.venda.pk }}</td>
+                    <td data-label="Cliente">{{ produto.venda.cliente.Nome }}</td>
+                    <td data-label="Data da Venda">{{ produto.venda.Data_venda|date:"d/m/Y" }}</td>
+                    <td data-label="Produto">{{ produto.Produto }}</td>
+                    <td data-label="tipo">{{ produto.tipo }}</td>
+                    <td data-label="Vendedor">{{ produto.venda.vendedor.Usuario }}</td>
+                    <td data-label="Valor Original">
+                        R$ {{ produto.valor_produto_sem_desconto|floatformat:2|default:"0.00" }}
+                    </td>
+                    <td data-label="Desconto">
+                        {{ produto.desconto }}
+                    </td>
+                    <td data-label="Valor Original">
+                        R$ {{ produto.Valor_venda|floatformat:2|default:"0.00" }}
+                    </td>
+
+
+                    <td data-label="Ações">
+                        <div class="action-buttons">
+                            <a href="#" class="edit">Editar</a>
+                            <form method="post"
+                                  class="delete"
+                                  action="{% url 'posvendasapp:delete_produto_via_tabela' produto.pk %}"
+                                  onsubmit="if(confirm('Deseja realmente excluir este produto?')) { this.querySelector('button').disabled = true; return true; } else { return false; }">
+                                {% csrf_token %}
+                                <button type="submit" class="delete-btn">Excluir</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7">Nenhum produto registrado.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% if is_paginated %}
+            <div style="font-size: 0.9rem" class="pagination" style="margin-top: 20px; text-align: center;">
+                {% if page_obj.has_previous %}
+                    <a href="?{% if request.GET.Cargo %}Cargo={{ request.GET.Cargo }}&{% endif %}page={{ page_obj.previous_page_number }}">&laquo;
+                        Anterior</a>
+                {% endif %}
+
+                <span style="margin: 0 10px;">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+
+                {% if page_obj.has_next %}
+                    <a href="?{% if request.GET.Cargo %}Cargo={{ request.GET.Cargo }}&{% endif %}page={{ page_obj.next_page_number }}">Próxima
+                        &raquo;</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+
+
+
+    <!-- Script de controle de ordenação -->
+    <script>
+        document.getElementById('form-ordenacao').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const params = new URLSearchParams();
+
+            const nome = form.querySelector('input[name="nome"]:checked');
+            const retorno = form.querySelector('input[name="retorno"]:checked');
+            const valor = form.querySelector('input[name="valor"]:checked');
+
+            if (nome) {
+                params.append('nome', nome.value);
+            } else if (retorno) {
+                params.append('retorno', retorno.value);
+            } else if (valor) {
+                params.append('valor', valor.value);
+            }
+
+            const url = window.location.pathname + '?' + params.toString();
+            window.location.href = url;
+        });
+    </script>
 
 {% endblock %}

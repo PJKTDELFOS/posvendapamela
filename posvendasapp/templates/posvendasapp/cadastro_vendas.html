@@ -33,17 +33,20 @@
 
                             {% if modo == 'edição' %}
                                 {% if form.instance.pk %}
-                                    <a href="#" class="btn btn-danger btn-delete-produto"
-                                       onclick="return confirm('Tem certeza que deseja deletar este produto?');">Deletar
-                                        produto</a>
+                                    <button type="button"
+                                            onclick="excluirProduto(this)"
+                                            data-venda-id="{{ venda.pk }}"
+                                            data-produto-id="{{ form.instance.pk }}">
+                                        Excluir
+                                    </button>
                                 {% endif %}
                             {% endif %}
                         </div>
                     {% endfor %}
                 </div>
-                {% if modo != 'edição' %}
-                    <button type="button" class="btn-add-form" id="add-produto-btn">Adicionar Produto</button>
-                {% endif %}
+
+                <button type="button" class="btn-add-form" id="add-produto-btn">Adicionar Produto</button>
+
             </details>
 
             <hr>
@@ -199,5 +202,33 @@
                 }
             });
         });
+
+        function excluirProduto(button) {
+            if (confirm("Deseja realmente excluir este produto?")) {
+                button.disabled = true;
+
+                const vendaId = button.getAttribute('data-venda-id');
+                const produtoId = button.getAttribute('data-produto-id');
+
+                if (!vendaId || !produtoId) {
+                    alert("Erro: venda ou produto sem ID.");
+                    return;
+                }
+
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/tabela_venda/${vendaId}/editar/${produtoId}/deletar`;
+
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = csrfToken;
+
+                form.appendChild(csrfInput);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
     </script>
 {% endblock %}

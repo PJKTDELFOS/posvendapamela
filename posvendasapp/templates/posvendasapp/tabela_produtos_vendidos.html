@@ -2,51 +2,51 @@
 
 {% block content %}
     <div class="list-container">
-        <h2>LISTA DE VENDAS</h2>
+        <h2>LISTA DE PRODUTOS VENDIDOS</h2>
 
         <form method="get" class="filtros-container">
-    <fieldset>
-        <legend>Ordenar por:</legend>
+            <fieldset>
+                <legend>Ordenar por:</legend>
 
-        <label>
-            <input type="radio" name="sort" value="desconto"
-                   {% if request.GET.sort == 'desconto' %}checked{% endif %}>
-            Desconto (maior primeiro)
-        </label>
+                <label>
+                    <input type="radio" name="sort" value="desconto"
+                           {% if request.GET.sort == 'desconto' %}checked{% endif %}>
+                    Desconto (maior primeiro)
+                </label>
 
-        <label>
-            <input type="radio" name="sort" value="desconto_asc"
-                   {% if request.GET.sort == 'desconto_asc' %}checked{% endif %}>
-            Desconto (menor primeiro)
-        </label>
+                <label>
+                    <input type="radio" name="sort" value="desconto_asc"
+                           {% if request.GET.sort == 'desconto_asc' %}checked{% endif %}>
+                    Desconto (menor primeiro)
+                </label>
 
-        <label>
-            <input type="radio" name="sort" value="Valor_venda"
-                   {% if request.GET.sort == 'Valor_venda' %}checked{% endif %}>
-            Valor vendido (maior primeiro)
-        </label>
+                <label>
+                    <input type="radio" name="sort" value="Valor_venda"
+                           {% if request.GET.sort == 'Valor_venda' %}checked{% endif %}>
+                    Valor vendido (maior primeiro)
+                </label>
 
-        <label>
-            <input type="radio" name="sort" value="Valor_venda_asc"
-                   {% if request.GET.sort == 'Valor_venda_asc' %}checked{% endif %}>
-            Valor vendido (menor primeiro)
-        </label>
+                <label>
+                    <input type="radio" name="sort" value="Valor_venda_asc"
+                           {% if request.GET.sort == 'Valor_venda_asc' %}checked{% endif %}>
+                    Valor vendido (menor primeiro)
+                </label>
 
-        <label>
-            <input type="radio" name="sort" value="valor_produto_sem_desconto"
-                   {% if request.GET.sort == 'valor_produto_sem_desconto' %}checked{% endif %}>
-            Valor sem desconto (maior primeiro)
-        </label>
+                <label>
+                    <input type="radio" name="sort" value="valor_produto_sem_desconto"
+                           {% if request.GET.sort == 'valor_produto_sem_desconto' %}checked{% endif %}>
+                    Valor sem desconto (maior primeiro)
+                </label>
 
-        <label>
-            <input type="radio" name="sort" value="valor_produto_sem_desconto_asc"
-                   {% if request.GET.sort == 'valor_produto_sem_desconto_asc' %}checked{% endif %}>
-            Valor sem desconto (menor primeiro)
-        </label>
+                <label>
+                    <input type="radio" name="sort" value="valor_produto_sem_desconto_asc"
+                           {% if request.GET.sort == 'valor_produto_sem_desconto_asc' %}checked{% endif %}>
+                    Valor sem desconto (menor primeiro)
+                </label>
 
-        <button type="submit">Filtrar</button>
-    </fieldset>
-</form>
+                <button type="submit">Filtrar</button>
+            </fieldset>
+        </form>
         <!-- Tabela de vendas -->
         <table class="list-table">
             <thead>
@@ -87,8 +87,13 @@
 
                     <td data-label="Ações">
                         <div class="action-buttons">
-                            <a href="#" class="edit">Editar</a>
-                            <a href="#" class="delete">Apagar</a>
+                            <form method="post"
+                                  class="delete"
+                                  action="{% url 'posvendasapp:delete_produto_via_tabela' produto.pk %}"
+                                  onsubmit="if(confirm('Deseja realmente excluir este produto?')) { this.querySelector('button').disabled = true; return true; } else { return false; }">
+                                {% csrf_token %}
+                                <button type="submit" class="delete-btn">Excluir</button>
+                            </form>
                         </div>
                     </td>
                 </tr>
@@ -99,6 +104,21 @@
             {% endfor %}
             </tbody>
         </table>
+        {% if is_paginated %}
+            <div style="font-size: 0.9rem" class="pagination" style="margin-top: 20px; text-align: center;">
+                {% if page_obj.has_previous %}
+                    <a href="?{% if request.GET.Cargo %}Cargo={{ request.GET.Cargo }}&{% endif %}page={{ page_obj.previous_page_number }}">&laquo;
+                        Anterior</a>
+                {% endif %}
+
+                <span style="margin: 0 10px;">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+
+                {% if page_obj.has_next %}
+                    <a href="?{% if request.GET.Cargo %}Cargo={{ request.GET.Cargo }}&{% endif %}page={{ page_obj.next_page_number }}">Próxima
+                        &raquo;</a>
+                {% endif %}
+            </div>
+        {% endif %}
     </div>
 
 {% endblock %}

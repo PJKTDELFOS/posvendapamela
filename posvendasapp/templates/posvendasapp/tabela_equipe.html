@@ -55,7 +55,7 @@
 
     <!-- Paginação -->
     {% if is_paginated %}
-        <div class="pagination" style="margin-top: 20px; text-align: center;">
+        <div style="font-size: 0.9rem" class="pagination" style="margin-top: 20px; text-align: center;">
             {% if page_obj.has_previous %}
                 <a href="?{% if request.GET.Cargo %}Cargo={{ request.GET.Cargo }}&{% endif %}page={{ page_obj.previous_page_number }}">&laquo; Anterior</a>
             {% endif %}

@@ -77,7 +77,7 @@ class ClientesAdmin(admin.ModelAdmin):
 # Admin de Vendas com Produtos Inline
 @admin.register(Vendas)
 class VendasAdmin(admin.ModelAdmin):
-    list_display = ('cliente', 'Data_venda', 'previsao_de_retorno', 'valor_total_venda_formatada','vendedor')
+    list_display = ('id','cliente', 'Data_venda', 'previsao_de_retorno', 'valor_total_venda_formatada','vendedor')
     search_fields = ('cliente__Nome','vendedor__Usuario__username')
     list_filter = ('Data_venda',)
     inlines = [ProdutosInline,OcorrenciaInline]
@@ -107,6 +107,6 @@ class OcorrenciaAdmin(admin.ModelAdmin):
 # Admin de Produtos isolado (opcional)
 @admin.register(Produtos)
 class ProdutosAdmin(admin.ModelAdmin):
-    list_display = ('Produto', 'tipo', 'venda', 'Valor_venda', 'valor_produto_sem_desconto', 'desconto_formatada')
+    list_display = ('id','Produto', 'tipo', 'venda', 'Valor_venda', 'valor_produto_sem_desconto', 'desconto_formatada')
     search_fields = ('Produto', 'tipo','venda__cliente__Nome')#filtro do djangoadmin para Fk
     list_filter = ('tipo', 'venda__cliente__Nome')

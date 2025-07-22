@@ -229,23 +229,23 @@ select option {
 
 .list-table th,
 .list-table td {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.5);
   padding: 10px 15px;
   text-align: left;
   font-size: 18px;
-  background-color: transparent;
+  background-color: rgba(0, 0, 0, 0.5);
   color: #fff;
 }
 
 .list-table th {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(0, 0, 0, 0.5);
   color: #fff;
   font-weight: bold;
 }
 
 /* Estilo ao passar o mouse */
 .list-table tr:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 /* Botões de ação */
@@ -285,6 +285,7 @@ select option {
 .pagination {
   text-align: center;
   margin-top: 25px;
+  font-size: 0.9rem !important;
 }
 
 .pagination a {
@@ -336,7 +337,7 @@ select option {
    FILTROS - FAIXA FININHA E ALINHADA
    =========================== */
 .filtros-container {
-  background-color: rgba(255, 255, 255, 0.12); /* cor e transparência da faixa */
+  background-color: rgba(0, 0, 0, 0.5); /* cor e transparência da faixa */
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   padding: 8px 20px; /* altura da faixa */
@@ -423,7 +424,7 @@ select option {
   border-radius: 12px;
   max-width: 800px;
   margin: auto;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .form-container label,
@@ -437,7 +438,7 @@ select option {
 .form-container input,
 .form-container select,
 .form-container textarea {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(0, 0, 0, 0.5);
   border: 1px solid #ccc;
   padding: 0.6rem;
   border-radius: 6px;
@@ -450,7 +451,7 @@ select option {
 .form-container textarea:focus {
   outline: none;
   border-color: #66ccff;
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(0, 0, 0, 0.5);
   color: #fff;
 }
 
@@ -512,7 +513,7 @@ select option {
   color: #ffc107; /* amarelo destaque */
   font-size: 1.6rem;
   margin-bottom: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.5);
   padding-bottom: 0.5rem;
   text-align: center; /* centraliza o título */
 }
@@ -632,7 +633,7 @@ div[id^="div_id_"][id$="-DELETE"] {
 
 /*  cards */
 .detalhes-membro {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   padding: 2rem;
@@ -665,7 +666,7 @@ div[id^="div_id_"][id$="-DELETE"] {
 
 .campo-label {
   font-weight: bold;
-  color: #ffc107;
+  color: white;
   flex: 1;
 }
 
@@ -682,4 +683,172 @@ div[id^="div_id_"][id$="-DELETE"] {
 
 .btn-voltar {
   background-color : #ffc107;
+}
+.botoes-acao-duas-colunas {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 colunas de largura igual */
+  gap: 16px; /* espaço entre os botões */
+  max-width: 600px;
+  margin: 2rem auto;
+}
+
+.botoes-acao-duas-colunas .ordenar-btn {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  text-align: center;
+  transition: background-color 0.3s ease;
+}
+
+.botoes-acao-duas-colunas .ordenar-btn:hover {
+  background-color: #e0a800;
+}
+/* Botão editar */
+.action-buttons a.edit {
+  background-color: #ffdd57;
+  color: #333;
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-size: 15px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  text-align: center;
+  display: inline-block; /* garantir o tamanho correto */
+  cursor: pointer;
+}
+
+.action-buttons a.edit:hover {
+  background-color: #ffc107;
+}
+
+/* Botão excluir - estilo igual ao editar, porém vermelho */
+.delete-btn {
+  background-color: #f87171; /* vermelho claro */
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-size: 15px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  text-align: center;
+  border: none; /* botões normalmente têm borda */
+  cursor: pointer;
+  display: inline-block;
+}
+
+.delete-btn:hover {
+  background-color: #e53935; /* vermelho mais escuro no hover */
+}
+.btn {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 15px;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  cursor: pointer;
+  border: none;
+}
+
+/* Botão Editar */
+.btn-editar {
+  background-color: #ffdd57;
+  color: #333;
+}
+
+.btn-editar:hover {
+  background-color: #ffc107;
+}
+
+/* Botão Excluir */
+.btn-excluir {
+  background-color: #f87171;
+  color: #fff;
+}
+
+.btn-excluir:hover {
+  background-color: #e53935;
+}
+
+/* Botão Voltar */
+.btn-voltar {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.btn-voltar:hover {
+  background-color: #0056b3;
+}
+
+/* =====================
+   BOTÕES EM DUAS COLUNAS
+   ===================== */
+.botoes-acao-duas-colunas {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 colunas iguais */
+  gap: 16px;
+  max-width: 600px;
+  margin: 2rem auto;
+}
+
+.botoes-acao-duas-colunas .btn {
+  width: 100%;
+}
+
+/* =====================
+   ANTIGAS CLASSES AINDA PRESENTES, MAS NÃO USAR
+   ===================== */
+/* As classes abaixo agora são substituídas pelas novas .btn-XXX */
+.action-buttons a.edit,
+.action-buttons a.delete,
+.ordenar-btn,
+.form-container button,
+.filtros-container button {
+  /* Sugestão: use as novas classes .btn, .btn-editar, etc. */
+}
+/* ==========================
+   ESTILO DO FORMULÁRIO DE LOGIN
+   ========================== */
+.login-container {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  max-width: 400px;
+  margin: 6rem auto;
+  padding: 2rem 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  color: #fff;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+.login-container h3 {
+  font-size: 1.8rem;
+  color: #ffc107;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 0.5rem;
+}
+
+.login-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.login-container button {
+  padding: 0.8rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #007bff;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }

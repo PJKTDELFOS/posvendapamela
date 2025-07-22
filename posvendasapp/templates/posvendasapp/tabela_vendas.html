@@ -52,7 +52,7 @@
             <tbody>
             {% for venda in vendas %}
                 <tr>
-                    <td data-label="id">{{ venda.pk }}</td>
+                    <td data-label="id"><a href="{% url 'posvendasapp:ficha_venda' venda.pk %}">{{ venda.pk }}</a></td>
                     <td data-label="Cliente">{{ venda.cliente.Nome }}</td>
                     <td data-label="Data da Venda">{{ venda.Data_venda|date:"d/m/Y" }}</td>
                     <td data-label="Previsão (dias)">{{ venda.Previsao|default:"-" }}</td>
@@ -70,7 +70,13 @@
                     <td data-label="Ações">
                         <div class="action-buttons">
                             <a href="{% url 'posvendasapp:atualizar_venda' venda.pk %}" class="edit">Editar</a>
-                            <a href="{% url 'posvendasapp:deletar_venda' venda.pk %}" class="delete">Apagar</a>
+                            <form method="post"
+                                  class="delete"
+                                  action="{% url 'posvendasapp:deletar_venda' venda.pk %}"
+                                  onsubmit="if(confirm('Deseja realmente excluir este produto?')) { this.querySelector('button').disabled = true; return true; } else { return false; }">
+                                {% csrf_token %}
+                                <button type="submit" class="delete-btn">Excluir</button>
+                            </form>
                         </div>
                     </td>
                 </tr>
@@ -81,30 +87,45 @@
             {% endfor %}
             </tbody>
         </table>
+        {% if is_paginated %}
+            <div style="font-size: 0.9rem" class="pagination" style="margin-top: 20px; text-align: center;">
+                {% if page_obj.has_previous %}
+                    <a href="?{% if request.GET.Cargo %}Cargo={{ request.GET.Cargo }}&{% endif %}page={{ page_obj.previous_page_number }}">&laquo;
+                        Anterior</a>
+                {% endif %}
+
+                <span style="margin: 0 10px;">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+
+                {% if page_obj.has_next %}
+                    <a href="?{% if request.GET.Cargo %}Cargo={{ request.GET.Cargo }}&{% endif %}page={{ page_obj.next_page_number }}">Próxima
+                        &raquo;</a>
+                {% endif %}
+            </div>
+        {% endif %}
     </div>
 
     <!-- Script de controle de ordenação -->
     <script>
-    document.getElementById('form-ordenacao').addEventListener('submit', function(event){
-        event.preventDefault();
+        document.getElementById('form-ordenacao').addEventListener('submit', function (event) {
+            event.preventDefault();
 
-        const form = event.target;
-        const params = new URLSearchParams();
+            const form = event.target;
+            const params = new URLSearchParams();
 
-        const nome = form.querySelector('input[name="nome"]:checked');
-        const retorno = form.querySelector('input[name="retorno"]:checked');
-        const valor = form.querySelector('input[name="valor"]:checked');
+            const nome = form.querySelector('input[name="nome"]:checked');
+            const retorno = form.querySelector('input[name="retorno"]:checked');
+            const valor = form.querySelector('input[name="valor"]:checked');
 
-        if (nome) {
-            params.append('nome', nome.value);
-        } else if (retorno) {
-            params.append('retorno', retorno.value);
-        } else if (valor) {
-            params.append('valor', valor.value);
-        }
+            if (nome) {
+                params.append('nome', nome.value);
+            } else if (retorno) {
+                params.append('retorno', retorno.value);
+            } else if (valor) {
+                params.append('valor', valor.value);
+            }
 
-        const url = window.location.pathname + '?' + params.toString();
-        window.location.href = url;
-    });
+            const url = window.location.pathname + '?' + params.toString();
+            window.location.href = url;
+        });
     </script>
 {% endblock %}

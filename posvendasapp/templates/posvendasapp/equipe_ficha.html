@@ -24,10 +24,10 @@
         </div>
 
 
-        <div class="voltar-area">
-            <a class="btn-voltar" href="{% url 'posvendasapp:tabela_equipe' %}">← Voltar para lista</a>
-            <a class="btn-voltar" href="{% url 'posvendasapp:atualizar_equipe' staff.pk %}">Editar</a>
-            <a class="btn-voltar" href="{% url 'posvendasapp:deletar_equipe' staff.pk %}"> Excluir </a>
+        <div class="botoes-acao-duas-colunas">
+            <a class="btn btn-voltar" href="{% url 'posvendasapp:tabela_equipe' %}">← Voltar para lista</a>
+            <a class="btn btn-editar" href="{% url 'posvendasapp:atualizar_equipe' staff.pk %}">Editar</a>
+            <a class="btn btn-excluir" href="{% url 'posvendasapp:deletar_equipe' staff.pk %}"> Excluir </a>
 
         </div>
     </div>

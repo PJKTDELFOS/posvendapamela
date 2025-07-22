@@ -2,28 +2,35 @@
 {% load crispy_forms_tags %}
 
 
-{%block content %}
+{% block content %}
 
 
     <form method="post" enctype="multipart/form-data" class="form-container formulario-simples">
-    <h2>
-    {% if modo == 'edição' %}
-        Edição de  Cliente
-    {% elif modo == 'criação'  %}
-        Cadastro de  Cliente
-    {% endif %}
-    </h2>
-    {% csrf_token %}
-    {{ cliente_form.as_p }}
+        <h2>
+            {% if modo == 'edição' %}
+                Edição de  Cliente
+            {% elif modo == 'criação' %}
+                Cadastro de  Cliente
+            {% endif %}
+        </h2>
+        {% csrf_token %}
+        {{ cliente_form.as_p }}
 
 
-    <button type="submit">
-    {% if modo == 'edição' %}
-        Edição de  Cliente
-    {% elif modo == 'criação' %}
-        Cadastro de  Cliente
-    {% endif %}
-    </button>
-</form>
+        <div class="botoes-acao-duas-colunas">
+            {% if modo == 'edição' %}
+                <a class="ordenar-btn" href="{% url 'posvendasapp:cadastrar_venda' cliente_pk %}">Cadastrar Venda</a>
+            {% endif %}
+            <button type="submit">
+                {% if modo == 'edição' %}
+                    Edição de  Cliente
+                {% elif modo == 'criação' %}
+                    Cadastro de  Cliente
+                {% endif %}
+            </button>
+        </div>
+
+
+    </form>
 
 {% endblock %}

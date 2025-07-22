@@ -53,12 +53,18 @@ urlpatterns = [
 #_____________________________________________________________________________________________________________#
     #vendas
     path('tabela_venda/', views.Listar_Vendas.as_view(), name='tabela_venda'),
+    path('tabela_venda/<int:pk>', views.Venda_.as_view(), name='ficha_venda'),
     path('tabela_cliente/<int:cliente_pk>/cadastrar_venda/', views.Cadastrar_Vendas.as_view(), name='cadastrar_venda'),
     path('tabela_venda/<int:pk>/editar', views.Atualizar_Vendas.as_view(), name='atualizar_venda'),
     path('tabela_venda/<int:pk>/deletar', views.Delete_Venda.as_view(), name='deletar_venda'),
 #_____________________________________________________________________________________________________________#
     #produtos
     path('tabela_produtos_vendidos/', views.Listar_Produtos_Vendidos.as_view(), name='tabela_produtos_vendidos'),
+path('tabela_venda/<int:pk>/editar/<int:produto_pk>/deletar', views.Deletar_Produto.as_view(), name='deletar_produto_via_venda'),
+path('tabela_produtos_vendidos/<int:produto_pk>/delete',
+     views.Delete_produto_tabela.as_view(), name='delete_produto_via_tabela'),
+
+
 #_____________________________________________________________________________________________________________#
     #ocorrencias
 

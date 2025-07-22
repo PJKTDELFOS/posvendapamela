@@ -217,7 +217,8 @@ class Atualizar_Cliente(LoginRequiredMixin,View):
         form_cliente=Clienteforms(instance=cliente)
         return render(request, self.template_name,{
             'cliente_form':form_cliente,
-            'modo':'edição'
+            'modo':'edição',
+            'cliente_pk': cliente.pk
 
         })
     def post(self, request, *args, **kwargs):
@@ -230,7 +231,8 @@ class Atualizar_Cliente(LoginRequiredMixin,View):
             print(form_cliente.errors)
             return render(request, self.template_name, {
                 'cliente_form': form_cliente,
-                'modo':'edição'
+                'modo':'edição',
+                'cliente_pk': cliente.pk,
 
             })
 class DeleteCliente(LoginRequiredMixin,DeleteView):
@@ -382,6 +384,7 @@ class Atualizar_Vendas(LoginRequiredMixin, View):
         ocorrencia_formset.request = request  # ✅ necessário
 
         return render(request, self.template_name, {
+            'venda': venda,
             'form_venda': form_venda,
             'form_produto_formset': produto_formset,
             'ocorrencia_formset': ocorrencia_formset,
@@ -411,6 +414,7 @@ class Atualizar_Vendas(LoginRequiredMixin, View):
             ocorrencia_formset.request = request  # aqui também
 
             return render(request, self.template_name, {
+                'venda':venda,
                 'form_venda': form_venda,
                 'form_produto_formset': produto_formset,
                 'ocorrencia_formset': ocorrencia_formset,
@@ -477,23 +481,101 @@ class Listar_Vendas(LoginRequiredMixin, ListView):
             context['is_paginated'] = page_obj.has_other_pages()
 
         return context
-class Delete_Venda(LoginRequiredMixin,DeleteView):
+class Delete_Venda(LoginRequiredMixin,View):
+
+    def post(self, request, *args, **kwargs):
+        venda_deletada = get_object_or_404(Vendas, pk=kwargs['pk'])
+
+        try:
+            venda_deletada.delete()
+            messages.warning(request, 'venda excluída com sucesso!')
+        except:
+            messages.error(request, 'Erro ao excluir: venda está vinculado a outros registros.')
+
+        return redirect('posvendasapp:tabela_venda')
+
+
+class Venda_(LoginRequiredMixin,DetailView ):
     model = Vendas
-    success_url = reverse_lazy('posvendasapp:tabela_venda')
+    template_name = 'posvendasapp/venda_ficha.html'
+    context_object_name = 'venda'
     pk_url_kwarg = 'pk'
-    template_name = 'posvendasapp/confirmação_delete_venda.html'
 
-    def post(self, request, *args, **kwargs):
-        messages.success(self.request, 'cliente deletado com sucesso com sucesso!')
-        return super().post(request, *args, **kwargs)
-class DeleteProduto(LoginRequiredMixin,DeleteView):
-    model = Vendas
-    success_url = reverse_lazy('posvendasapp:tabela_vendas')
-    pk_url_kwarg = 'produto_pk'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        venda=self.get_object()
+        produtos=venda.produtos_vendidos.all()
+        #querrystrings
 
+        # valor_venda = self.request.GET.get('valor_venda')
+        # valor_sem_desconto=self.request.GET.get('valor_sem_desconto')
+        # desconto=self.request.GET.get('desconto')
+
+        sort=self.request.GET.get('sort','')
+
+
+        #ordenações
+
+        if sort == 'valor_venda':
+            produtos = produtos.order_by('Valor_venda')
+        elif sort == 'valor_venda_asc':
+            produtos = produtos.order_by('-Valor_venda')
+
+        elif sort == 'valor_produto_sem_desconto':
+            produtos = produtos.order_by('valor_produto_sem_desconto')
+        elif sort == 'valor_produto_sem_desconto_asc':
+            produtos = produtos.order_by('-valor_produto_sem_desconto')
+
+
+        # ordenação manual para  desconto  por ser uma  @property
+        if sort == 'Valor_venda':
+            produtos = produtos.order_by('-Valor_venda')
+        elif sort == 'Valor_venda_asc':
+            produtos = produtos.order_by('Valor_venda')
+        elif sort == 'valor_produto_sem_desconto':
+            produtos = produtos.order_by('-valor_produto_sem_desconto')
+        elif sort == 'valor_produto_sem_desconto_asc':
+            produtos = produtos.order_by('valor_produto_sem_desconto')
+        elif sort == 'desconto':
+            produtos = sorted(produtos, key=lambda p: p.desconto, reverse=True)
+        elif sort == 'desconto_asc':
+            produtos = sorted(produtos, key=lambda p: p.desconto)
+
+        # Paginação
+        paginator = Paginator(produtos, 5)
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        context['produtos'] = page_obj
+        context['page_obj'] = page_obj
+        context['is_paginated'] = page_obj.has_other_pages()
+        return context
+class Deletar_Produto(LoginRequiredMixin,View):
     def post(self, request, *args, **kwargs):
-        messages.success(self.request, 'produto deletado com sucesso!')
-        return super().post(request, *args, **kwargs)
+        venda_acessada=get_object_or_404(Vendas, pk=kwargs['pk'])
+        produto_deletado = get_object_or_404(Produtos, pk=kwargs['produto_pk'],venda=venda_acessada)
+        try:
+            produto_deletado.delete()
+            messages.warning(request, 'Produto excluído com sucesso!')
+        except :
+            messages.error(request, 'Erro ao excluir: produto está vinculado a outros registros.')
+
+        return redirect('posvendasapp:tabela_produtos_vendidos')
+
+
+class Delete_produto_tabela(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        produto = get_object_or_404(Produtos, pk=kwargs['produto_pk'])
+
+        try:
+            produto.delete()
+            messages.warning(request, 'Produto excluído com sucesso!')
+        except :
+            messages.error(request, 'Erro ao excluir: produto está vinculado a outros registros.')
+
+        return redirect('posvendasapp:tabela_produtos_vendidos')
+
+
 class DeleteOcorrencia(LoginRequiredMixin,DeleteView):
     model = Vendas
     success_url = reverse_lazy('posvendasapp:tabela_vendas')
@@ -502,20 +584,6 @@ class DeleteOcorrencia(LoginRequiredMixin,DeleteView):
     def post(self, request, *args, **kwargs):
         messages.success(self.request, 'Ocorrencia deletado com sucesso!')
         return super().post(request, *args, **kwargs)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 class Listar_Produtos_Vendidos(LoginRequiredMixin, ListView):
@@ -555,8 +623,6 @@ class Listar_Produtos_Vendidos(LoginRequiredMixin, ListView):
             queryset = queryset.order_by('-id')
 
         return queryset
-
-
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
