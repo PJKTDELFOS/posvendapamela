@@ -1,0 +1,11 @@
+{% extends "global/base.html" %}
+
+{% block content %}
+    <div class="filtros-container">
+        <form method="get" action="{% url 'posvendasapp:busca_cpf_cliente_db' %}">
+            <label for="cpf">Buscar CPF:</label>
+            <input type="text" id="cpf" name="q" placeholder="000.000.000-00" required>
+            <button type="submit">Buscar</button>
+        </form>
+    </div>
+{% endblock %}

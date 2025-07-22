@@ -14,12 +14,12 @@ mapa_modelos = {
     },
     'equipe': {
         'queryset': Equipe.objects.select_related('Usuario').all(),
-        'campos': ['Usuario__username', 'Cargo']
+        'campos': ['Usuario__username', 'Cargo','Usuario__first_name', 'Usuario__last_name']
     },
     'venda': {
         'queryset': Vendas.objects.select_related('cliente', 'vendedor').all(),
         'campos': ['cliente__Nome', 'vendedor__Usuario__username']
-        # Removido produto__nome pois produto não é FK direta aqui
+
     },
     'ocorrencia': {
         'queryset': Ocorrencia.objects.select_related('venda', 'vendedor').all(),

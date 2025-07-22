@@ -47,7 +47,11 @@
     <tbody>
       {% for cliente in cliente %}
       <tr>
-        <td>{{ cliente.Nome }}</td>
+        <td data-label="ID">
+                        <a href="{% url 'posvendasapp:cliente' cliente.pk %}">
+                                {{ cliente.pk }}
+                        </a>
+                    </td>
         <td>{{ cliente.contato }}</td>
         <td>{{ cliente.cpf }}</td>
         <td>R$ {{ cliente.valor_total_venda_do_cliente|floatformat:2 }}</td>

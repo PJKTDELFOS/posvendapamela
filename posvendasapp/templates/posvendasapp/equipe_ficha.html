@@ -1,0 +1,35 @@
+{% extends "global/base.html" %}
+
+
+{% block content %}
+    <div class="detalhes-membro">
+        <h2>Detalhes do Membro</h2>
+
+        <div class="linha-detalhe">
+            <span class="campo-label">Usuário:</span>
+            <span class="campo-valor">{{ staff.Usuario.username }}</span>
+        </div>
+        <div class="linha-detalhe">
+            <span class="campo-label">Nome completo:</span>
+            <span class="campo-valor">{{ staff.Usuario.first_name }} {{ staff.Usuario.last_name }}</span>
+        </div>
+
+        <div class="linha-detalhe">
+            <span class="campo-label">Cargo:</span>
+            <span class="campo-valor">{{ staff.Cargo }}</span>
+        </div>
+        <div class="linha-detalhe">
+            <span class="campo-label">Ultimo Login:</span>
+            <span class="campo-valor">{{ staff.Usuario.last_login }}</span>
+        </div>
+
+
+        <div class="voltar-area">
+            <a class="btn-voltar" href="{% url 'posvendasapp:tabela_equipe' %}">← Voltar para lista</a>
+            <a class="btn-voltar" href="{% url 'posvendasapp:atualizar_equipe' staff.pk %}">Editar</a>
+            <a class="btn-voltar" href="{% url 'posvendasapp:deletar_equipe' staff.pk %}"> Excluir </a>
+
+        </div>
+    </div>
+
+{% endblock %}

@@ -9,10 +9,11 @@
 
 html, body {
   height: 100%;
-  font-family: sans-serif;
+  font-family: Arial, sans-serif;
   line-height: 1.4;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color: #333;
 }
 
 img, picture, video, canvas, svg {
@@ -37,20 +38,20 @@ ul, ol {
 body {
   min-height: 100vh;
   background-image: url("../../imagens/plano_de_fundo_oculos_1.png");
-  font-family: Arial, sans-serif;
-  color: #333;
-  margin: 0;
-  padding: 0;
   background-position: center;
   background-repeat: repeat;
   background-size: cover;
+  margin: 0;
+  padding: 0;
+}
 
 /* Título da navbar */
 .navbar-title {
   color: white;
   font-weight: bold;
-  font-size: 18px;
+  font-size: 1rem;
   margin-right: 20px;
+  font-family: Arial, sans-serif;
 }
 
 /* Primeira linha do body sem margem */
@@ -61,12 +62,13 @@ body > p:first-child {
 /* Navbar principal */
 .navbar {
   background-color: #0d6efd;
-  padding: 15px 30px;
+  padding: 1rem 2rem; /* padding padronizado */
   display: flex;
   justify-content: space-between;
   align-items: center;
   transition: background-color 0.6s ease-in-out;
-  font-size: large;
+  font-family: Arial, sans-serif;
+  font-size: 1rem;
 }
 
 .navbar:hover {
@@ -75,10 +77,15 @@ body > p:first-child {
 
 .navbar a {
   color: white;
-  margin-right: 20px;
   font-weight: bold;
   position: relative;
   transition: color 0.4s ease;
+  font-family: Arial, sans-serif;
+}
+
+/* Espaçamento entre links da navbar, exceto o último */
+.navbar a:not(:last-child) {
+  margin-right: 20px;
 }
 
 .navbar:hover a {
@@ -93,6 +100,7 @@ body > p:first-child {
 .dropdown {
   position: relative;
   display: inline-block;
+  margin-right: 20px; /* espaçamento entre dropdowns, se tiver vários */
 }
 
 /* Menu suspenso de primeiro nível */
@@ -210,7 +218,6 @@ select option {
   color: #000; /* cor do texto das opções */
   background-color: #fff; /* fundo branco para contraste */
 }
-
 
 /* Tabela da equipe */
 .list-table {
@@ -500,6 +507,7 @@ select option {
 #add-formset-btn:hover {
   background-color: #218838;
 }
+
 .form-container h2 {
   color: #ffc107; /* amarelo destaque */
   font-size: 1.6rem;
@@ -508,6 +516,7 @@ select option {
   padding-bottom: 0.5rem;
   text-align: center; /* centraliza o título */
 }
+
 /* ===========================
    FORMULÁRIOS COM BLOCOS DESLIZANTES (ACCORDION)
    =========================== */
@@ -550,9 +559,9 @@ select option {
 .formset-scroll::-webkit-scrollbar-thumb:hover {
   background-color: #ffc107;
 }
-}
+
 div[id^="div_id_"][id$="-DELETE"] {
-    display: none !important;
+  display: none !important;
 }
 
 /*  grid de ordenação */
@@ -616,7 +625,61 @@ div[id^="div_id_"][id$="-DELETE"] {
 }
 
 .pagination .current {
-    font-weight: bold;
-    color: #007bff; /* azul, por exemplo */
-    font-size: 1.1rem; /* opcional */
+  font-weight: bold;
+  color: #007bff; /* azul, por exemplo */
+  font-size: 1.1rem; /* opcional */
+}
+
+/*  cards */
+.detalhes-membro {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 2rem;
+  max-width: 600px;
+  margin: 40px auto;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  color: #fff;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.detalhes-membro h2 {
+  font-size: 1.8rem;
+  color: #ffc107;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 0.5rem;
+}
+
+.linha-detalhe {
+  margin-bottom: 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  font-size: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.5rem;
+}
+
+.campo-label {
+  font-weight: bold;
+  color: #ffc107;
+  flex: 1;
+}
+
+.campo-valor {
+  flex: 2;
+  text-align: right;
+  color: #fff;
+}
+
+.voltar-area {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.btn-voltar {
+  background-color : #ffc107;
 }

@@ -34,13 +34,20 @@ urlpatterns = [
 #_____________________________________________________________________________________________________________#
     #equipe
     path('tabela_equipe/', views.Listar_Staff.as_view(), name='tabela_equipe'),
+    path('tabela_equipe/<int:pk>/', views.Membro_Equipe.as_view(), name='membro_equipe'),
+
     path('tabela_equipe/<int:pk>/editar', views.Atualizar_membro_Equipe.as_view(), name='atualizar_equipe'),
     path('cadastrar_equipe', views.CadastrarEquipe.as_view(), name='cadastrar_equipe'),
     path('tabela_equipe/<int:pk>/deletar', views.DeleteEquipe.as_view(), name='deletar_equipe'),
 #_____________________________________________________________________________________________________________#
     #cliente
     path('tabela_cliente/', views.Listar_Clientes.as_view(), name='tabela_cliente'),
+
+    path('busca_cliente/', views.busca_cpf, name='busca_cpf_cliente_db'),
+    path('busca_cpf/', views.pagina_busca_cpf, name='tela_de_busca'),
+
     path('cadastrar_cliente', views.Cadastrar_Cliente.as_view(), name='cadastrar_cliente'),
+    path('tabela_cliente/<int:pk>/', views.Cliente.as_view(), name='cliente'),
     path('tabela_cliente/<int:pk>/editar', views.Atualizar_Cliente.as_view(), name='atualizar_cliente'),
     path('tabela_cliente/<int:pk>/deletar', views.DeleteCliente.as_view(), name='deletar_cliente'),
 #_____________________________________________________________________________________________________________#

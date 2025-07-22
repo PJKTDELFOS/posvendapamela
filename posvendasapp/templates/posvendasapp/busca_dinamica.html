@@ -1,49 +1,50 @@
-{% extends 'global/base.html' %}  {# ou o layout que você estiver usando #}
+{% extends 'global/base.html' %}
 
 {% block content %}
-    <h2 style="margin-bottom: 20px;">Resultados para "{{ termo }}" em {{ modelo|title }}</h2>
+    <div class="list-container">
+        <h2>Resultados para "{{ termo }}"</h2>
 
-    <div style="margin-bottom: 20px;">
-        <form action="{% url 'posvendasapp:busca_dinamica' %}" method="get" style="display: flex; gap: 10px; align-items: center;">
-            <input type="hidden" name="modelo" value="{{ modelo }}">
-            <input type="text" name="q" value="{{ termo }}" placeholder="Buscar..." required
-                   style="padding: 8px; width: 300px; border: 1px solid #ccc; border-radius: 4px;">
-            <button type="submit"
-                    style="padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 4px;">
-                🔍 Buscar
-            </button>
-        </form>
-    </div>
+        {% if resultados %}
+            {% for modelo, itens in resultados.items %}
+                <details class="form-colapsavel">
+                    <summary>{{ modelo|title }}</summary>
+                    <ul style="list-style: none; padding: 0; margin-top: 1rem;">
+                        {% for item in itens %}
+                            <li style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.2); font-size: 1rem;">
+                                {% if modelo == 'cliente' %}
+                                    <strong>Nome:</strong> <a href="#">{{ item.Nome }}</a> |
+                                    <strong>Contato:</strong> {{ item.contato }}
 
-    {% if resultados %}
-        <ul style="list-style: none; padding: 0;">
-            {% for item in resultados %}
-                <li style="padding: 10px; border-bottom: 1px solid #ccc;">
-                    {% if modelo == 'cliente' %}
-                        <strong>Nome:</strong> {{ item.nome }} |
-                        <strong>Email:</strong> {{ item.email }} |
-                        <strong>CPF:</strong> {{ item.cpf }}
+                                {% elif modelo == 'venda' %}
+                                    <strong>Cliente:</strong> <a href="#">{{ item.cliente.Nome }}</a> |
+                                    <strong>Vendedor:</strong> {{ item.vendedor.Usuario.username }} |
+                                    <strong>Data:</strong> {{ item.Data_venda }}
 
-                    {% elif modelo == 'venda' %}
-                        <strong>Cliente:</strong> {{ item.cliente.nome }} |
-                        <strong>Produto:</strong> {{ item.produto.nome }} |
-                        <strong>Vendedor:</strong> {{ item.vendedor.nome }} |
-                        <strong>Data:</strong> {{ item.data }} |
-                        <strong>Valor:</strong> R$ {{ item.valor }}
+                                {% elif modelo == 'produto' %}
+                                    <strong>Produto:</strong> <a>{{ item.Produto }}</a> |
+                                    <strong>Tipo:</strong> {{ item.tipo }}
 
-                    {% elif modelo == 'produto' %}
-                        <strong>Produto:</strong> {{ item.nome }}
+                                {% elif modelo == 'equipe' %}
+                                    <strong>Usuário:</strong> <a>{{ item.Usuario.username }}</a> |
+                                    <strong>Nome:</strong> {{ item.Usuario.first_name }} {{ item.Usuario.last_name }} |
+                                    <strong>Cargo:</strong> {{ item.Cargo }}
 
-                    {% elif modelo == 'equipe' %}
-                        <strong>Vendedor:</strong> {{ item.usuario.username }}
+                                {% elif modelo == 'ocorrencia' %}
+                                    <strong>Título:</strong> {{ item.titulo_ocorrencia }} |
+                                    <strong>Tipo:</strong> {{ item.tipo_ocorrencia }} |
+                                    <strong>Venda:</strong> {{ item.venda.id }} |
+                                    <strong>Vendedor:</strong> {{ item.vendedor.Usuario.username }}
 
-                    {% else %}
-                        {{ item }}
-                    {% endif %}
-                </li>
+                                {% else %}
+                                    {{ item }}
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </details>
             {% endfor %}
-        </ul>
-    {% else %}
-        <p>Nenhum resultado encontrado.</p>
-    {% endif %}
+        {% else %}
+            <p>Nenhum resultado encontrado.</p>
+        {% endif %}
+    </div>
 {% endblock %}

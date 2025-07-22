@@ -125,11 +125,17 @@ class Main_services:
         return venda
 
     @staticmethod
-    def busca_centralizada(queryset,termo,campos):
-        q=Q()
-        for campo in campos:
-            q |= Q(**{f"{campo}__icontains": termo})
-        return queryset.filter(q)
+    def busca_centralizada(queryset, termo, campos):
+        from django.db.models import Q
+
+        palavras = termo.split()
+        q = Q()
+        for palavra in palavras:
+            q_palavra = Q()
+            for campo in campos:
+                q_palavra |= Q(**{f"{campo}__icontains": palavra})
+            q &= q_palavra  # usa AND entre palavras, para pegar todas
+        return queryset.filter(q).distinct()
 
 
 

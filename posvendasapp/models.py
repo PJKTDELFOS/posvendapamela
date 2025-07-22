@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from utils import tools_utils
 from datetime import timedelta,date
+import os
 from django.utils import timezone
 # Create your models here.
 
@@ -34,6 +35,10 @@ class Clientes(models.Model):
 
     def __str__(self):
         return self.Nome
+
+    def nome_arquivo(self):
+        if self.Arquivos:
+            return os.path.basename(self.Arquivos.name)
 
     def clean(self):
         error_messages={}

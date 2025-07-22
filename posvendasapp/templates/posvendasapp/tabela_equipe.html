@@ -31,7 +31,11 @@
         <tbody>
             {% for membro in equipe %}
                 <tr>
-                    <td data-label="ID">{{ membro.pk }}</td>
+                    <td data-label="ID">
+                        <a href="{% url 'posvendasapp:membro_equipe' membro.pk %}">
+                                {{ membro.pk }}
+                        </a>
+                    </td>
                     <td data-label="Usuário">{{ membro.Usuario.username }}</td>
                     <td data-label="Cargo">{{ membro.Cargo }}</td>
                     <td data-label="Ações">

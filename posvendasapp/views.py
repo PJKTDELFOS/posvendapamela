@@ -8,7 +8,7 @@ from django.shortcuts import redirect,render
 from django.views.generic.edit import DeleteView
 import shutil
 from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy,reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .forms import *
@@ -64,6 +64,28 @@ class Busca(LoginRequiredMixin,View):
             'termo': termo,
             'resultados': resultados,
         })
+@login_required
+def busca_cpf(request):#função para busca de cpf antes de cadastrar cliente
+    cpf_buscado=request.GET.get('q','').strip()
+
+    try:
+        clientes_cpf = Clientes.objects.get(cpf=cpf_buscado)
+        return redirect('posvendasapp:atualizar_cliente',pk=clientes_cpf.pk)
+
+    except Clientes.DoesNotExist:
+        url=reverse('posvendasapp:cadastrar_cliente')
+        return redirect(f'{url}?cpf={cpf_buscado}')
+
+
+def pagina_busca_cpf(request):
+    return render(request,'posvendasapp/busca_cpf_cliente.html')
+
+
+
+
+
+
+
 
 #views de equipe________________________________________________________________________________________________________
 class CadastrarEquipe(View):
@@ -153,16 +175,27 @@ class Listar_Staff(ListView):
 
 class Membro_Equipe(DetailView,LoginRequiredMixin):
     model = Equipe
-    template_name = 'posvendasapp/venda_ficha.html'
-    
+    template_name = 'posvendasapp/equipe_ficha.html'
+    context_object_name = 'staff'
+    pk_url_kwarg = 'pk'
+
+    def get_context_data(self, **kwargs):
+        context=super().get_context_data(**kwargs)
+
+        return context
+
+
 
 #views de cliente_______________________________________________________________________________________________________
 class Cadastrar_Cliente(LoginRequiredMixin,View):
     template_name = 'posvendasapp/cadastro_att_cliente.html'
 
     def get(self, request, *args, **kwargs):
+        cpf=request.GET.get('cpf','')
+        cliente_form=Clienteforms(initial={'cpf':cpf})
+
         return render(request, self.template_name,{
-            'cliente_form':Clienteforms(),
+            'cliente_form':cliente_form,
             'modo':'criação'
         })
 
@@ -238,12 +271,60 @@ class Listar_Clientes(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return context
+
+class Cliente(DetailView, LoginRequiredMixin):
+    model = Clientes
+    template_name = 'posvendasapp/cliente_ficha.html'
+    context_object_name = 'cliente'
+    pk_url_kwarg = 'pk'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        cliente = self.get_object()
+        vendas = cliente.Vendas.all()
+
+        nome = self.request.GET.get('nome')
+        retorno = self.request.GET.get('retorno')
+        valor = self.request.GET.get('valor')
+
+        if nome == 'az':
+            vendas = vendas.order_by('cliente__Nome')
+        elif nome == 'za':
+            vendas = vendas.order_by('-cliente__Nome')
+
+
+        # ordenação manual para  valor_total_venda se por ser uma  @property
+        if valor == 'asc':
+            vendas = sorted(vendas, key=lambda v: v.valor_total_venda)
+        elif valor == 'dec':
+            vendas = sorted(vendas, key=lambda v: v.valor_total_venda, reverse=True)
+        # ordenação manual para previsao de retorno se por ser uma  @property
+        if valor == 'asc':
+            vendas = sorted(vendas, key=lambda v: v.previsao_de_retorno)
+        elif valor == 'dec':
+            vendas=sorted(vendas, key=lambda v: v.previsao_de_retorno, reverse=True)
+
+        # Paginação
+        paginator = Paginator(vendas, 5)
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        context['vendas'] = page_obj
+        context['page_obj'] = page_obj
+        context['is_paginated'] = page_obj.has_other_pages()
+        return context
+
+
+
+
+
 #views de vendas_______________________________________________________________________________________________________
 class Cadastrar_Vendas(LoginRequiredMixin, View):
     template_name = 'posvendasapp/cadastro_vendas.html'
 
     def get(self, request, *args, **kwargs):
-        cliente = Clientes.objects.get(pk=self.kwargs['pk'])
+        cliente = Clientes.objects.get(pk=self.kwargs['cliente_pk'])
         vendedor = request.user.equipe
         venda_fake = Vendas(cliente=cliente, vendedor=vendedor)
 
@@ -260,7 +341,7 @@ class Cadastrar_Vendas(LoginRequiredMixin, View):
         })
 
     def post(self, request, *args, **kwargs):
-        cliente = Clientes.objects.get(pk=self.kwargs['pk'])
+        cliente = Clientes.objects.get(pk=self.kwargs['cliente_pk'])
         vendedor = request.user.equipe
         venda_fake = Vendas(cliente=cliente, vendedor=vendedor)
 
