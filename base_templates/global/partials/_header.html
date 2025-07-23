@@ -34,9 +34,11 @@
                     <li><a href="{% url 'posvendasapp:cadastrar_equipe' %}"> CADASTRAR EQUIPE</a></li>
                 </ul>
             </div>
+            <span class="menu-link">Usuário Logado: {{ user.username }}</span>
         </div>
 
         <!-- Parte direita da navbar: busca + logout -->
+
         <div style="display: flex; align-items: center; gap: 15px;">
             <div class="search-bar">
                 <form action="{% url 'posvendasapp:busca_dinamica' %}" method="get" style="display: flex; gap: 10px;">
@@ -46,6 +48,7 @@
                 </form>
             </div>
             <a href="{% url 'posvendasapp:logout' %}" style="padding: 10px 20px; font-size: 16px;">LOGOUT</a>
+
         </div>
     </div>
 {% else %}
