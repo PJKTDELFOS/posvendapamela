@@ -75,8 +75,6 @@ def busca_cpf(request):#função para busca de cpf antes de cadastrar cliente
     except Clientes.DoesNotExist:
         url=reverse('posvendasapp:cadastrar_cliente')
         return redirect(f'{url}?cpf={cpf_buscado}')
-
-
 def pagina_busca_cpf(request):
     return render(request,'posvendasapp/busca_cpf_cliente.html')
 
@@ -155,7 +153,7 @@ class DeleteEquipe(LoginRequiredMixin,DeleteView):
     def post(self, request, *args, **kwargs):
         messages.success(self.request, 'Membro da equipe deletado com sucesso com sucesso!')
         return super().post(request, *args, **kwargs)
-class Listar_Staff(ListView):
+class Listar_Staff(LoginRequiredMixin,ListView):
     model = Equipe
     template_name = 'posvendasapp/tabela_equipe.html'
     context_object_name = 'equipe'
@@ -163,14 +161,15 @@ class Listar_Staff(ListView):
 
     def get_queryset(self):
         queryset = Equipe.objects.order_by('Usuario')
-        cargo = self.request.GET.get('Cargo', 'None')
-        if cargo != 'None' and cargo:
-            queryset = queryset.filter(Cargo=cargo)
+        self.cargo = self.request.GET.get('Cargo', None)
+        if self.cargo:
+            queryset = queryset.filter(Cargo=self.cargo)
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['cargos'] = Equipe.objects.values_list('Cargo', flat=True).distinct()
+        context['filtro_cargo'] = self.cargo  # passa o filtro para o template
         return context
 
 class Membro_Equipe(DetailView,LoginRequiredMixin):

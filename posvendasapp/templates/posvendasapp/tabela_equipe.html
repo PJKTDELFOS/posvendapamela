@@ -2,23 +2,24 @@
 {% load static %}
 
 {% block content %}
-<div class="list-container">
-    <h2>Membros da Equipe</h2>
+    <div class="list-container">
+        <h2>Membros da Equipe</h2>
 
-    <!-- Filtro por cargo -->
-    <form method="get" style="margin-bottom: 20px;">
-        <label for="cargo">Filtrar por Cargo:</label>
-        <select name="Cargo" id="cargo" onchange="this.form.submit()" style="margin-left: 10px;">
-            <option value="">Todos</option>
-            {% for c in cargos %}
-                <option value="{{ c }}" {% if request.GET.Cargo == c %}selected{% endif %}>{{ c }}</option>
-            {% endfor %}
-        </select>
-    </form>
+        <!-- Filtro por cargo -->
+        <form method="get" style="margin-bottom: 20px;">
+            <label for="cargo">Filtrar por Cargo:</label>
+            <select name="Cargo" id="cargo" onchange="this.form.submit()" style="margin-left: 10px;">
+                <option value="">Todos</option>
+                {% for c in cargos %}
+                    <option value="{{ c }}" {% if filtro_cargo == c %}selected{% endif %}>{{ c }}</option>
+                {% endfor %}
+            </select>
 
-    <!-- Tabela de membros -->
-    <table class="list-table">
-        <thead>
+        </form>
+
+        <!-- Tabela de membros -->
+        <table class="list-table">
+            <thead>
             <tr>
                 <th>ID</th>
                 <th>Staff</th>
@@ -27,20 +28,20 @@
 
 
             </tr>
-        </thead>
-        <tbody>
+            </thead>
+            <tbody>
             {% for membro in equipe %}
                 <tr>
                     <td data-label="ID">
                         <a href="{% url 'posvendasapp:membro_equipe' membro.pk %}">
-                                {{ membro.pk }}
+                            {{ membro.pk }}
                         </a>
                     </td>
                     <td data-label="Usuário">{{ membro.Usuario.username }}</td>
                     <td data-label="Cargo">{{ membro.Cargo }}</td>
                     <td data-label="Ações">
                         <div class="action-buttons">
-                            <a href="{% url 'posvendasapp:atualizar_equipe' membro.pk %}" class="edit" >Editar</a>
+                            <a href="{% url 'posvendasapp:atualizar_equipe' membro.pk %}" class="edit">Editar</a>
                             <a href="{% url 'posvendasapp:deletar_equipe' membro.pk %}" class="delete">Excluir</a>
                         </div>
                     </td>
@@ -50,22 +51,24 @@
                     <td colspan="3" style="text-align: center;">Nenhum membro encontrado.</td>
                 </tr>
             {% endfor %}
-        </tbody>
-    </table>
+            </tbody>
+        </table>
 
-    <!-- Paginação -->
-    {% if is_paginated %}
-        <div style="font-size: 0.9rem" class="pagination" style="margin-top: 20px; text-align: center;">
-            {% if page_obj.has_previous %}
-                <a href="?{% if request.GET.Cargo %}Cargo={{ request.GET.Cargo }}&{% endif %}page={{ page_obj.previous_page_number }}">&laquo; Anterior</a>
-            {% endif %}
+        <!-- Paginação -->
+        {% if is_paginated %}
+            <div style="font-size: 0.9rem" class="pagination" style="margin-top: 20px; text-align: center;">
+                {% if page_obj.has_previous %}
+                    <a href="?{% if filtro_cargo %}Cargo={{ filtro_cargo }}&{% endif %}page={{ page_obj.previous_page_number }}">&laquo;
+                        Anterior</a>
+                {% endif %}
 
-            <span style="margin: 0 10px;">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                <span style="margin: 0 10px;">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
 
-            {% if page_obj.has_next %}
-                <a href="?{% if request.GET.Cargo %}Cargo={{ request.GET.Cargo }}&{% endif %}page={{ page_obj.next_page_number }}">Próxima &raquo;</a>
-            {% endif %}
-        </div>
-    {% endif %}
-</div>
+                {% if page_obj.has_next %}
+                    <a href="?{% if filtro_cargo %}Cargo={{ filtro_cargo }}&{% endif %}page={{ page_obj.previous_page_number }}">&laquo;
+                        Anterior</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
 {% endblock %}

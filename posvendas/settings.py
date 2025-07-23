@@ -21,13 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config(
-    'SECRET_KEY',)
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS =config('ALLOWED_HOSTS',cast=Csv())
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=lambda v: [s.strip() for s in v.split(',')])
 
 
 # Application definition
@@ -93,16 +92,25 @@ WSGI_APPLICATION = 'posvendas.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+DB_HOST = config('DB_HOST')
+DB_PORT = config('DB_PORT', default='')
+
+# Se estiver usando socket unix do Cloud SQL, DB_PORT deve ficar vazio
+if DB_HOST.startswith('/cloudsql/'):
+    DB_PORT = ''
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': config('DB_NAME'),
         'USER': config('DB_USER'),
         'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST'),  
-
+        'HOST': DB_HOST,
+        'PORT': DB_PORT,
     }
 }
+
+
 
 
 
@@ -124,24 +132,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'level': 'WARNING',
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs/django.log',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'WARNING',
-            'propagate': True,
-        },
-    },
-}
+import sys
+import os
+
+
+
 
 LANGUAGE_CODE = 'pt-BR'
 
@@ -173,7 +168,7 @@ LOGOUT_REDIRECT_URL='posvendasapp:login_sistema'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #axes
-AXES_FAILURE_LIMIT = 3  # tentativas de login permitidas
+AXES_FAILURE_LIMIT = 5  # tentativas de login permitidas
 AXES_COOLOFF_TIME = 1  # em horas; tempo que o IP ficará bloqueado
 AXES_LOCK_OUT_AT_FAILURE = True
 
@@ -186,3 +181,43 @@ SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 X_FRAME_OPTIONS = 'DENY'
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+import sys
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,  # mantém logs do Django e terceiros
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] {levelname} {name} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'stream': sys.stdout,
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',  # mais detalhado para troubleshooting
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
