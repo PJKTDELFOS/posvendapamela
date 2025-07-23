@@ -6,7 +6,7 @@ __pycache__
 db.sqlite3
 static/
 media/
-setor/local_settiings.py
+posvendas/local_settiings.py
 obs.txt
 PROCESSOS.txt
 AFAZER.txt
