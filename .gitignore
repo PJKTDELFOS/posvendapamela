@@ -12,7 +12,8 @@ PROCESSOS.txt
 AFAZER.txt
 ACESSODOCS.txt
 erros.txt
-.env
+.env.prod
+.env.dev
 comentarios.txt
 anotacoesprocesso.txt
 DIVERSOS

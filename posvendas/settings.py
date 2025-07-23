@@ -168,8 +168,8 @@ LOGOUT_REDIRECT_URL='posvendasapp:login_sistema'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #axes
-AXES_FAILURE_LIMIT = 5  # tentativas de login permitidas
-AXES_COOLOFF_TIME = 1  # em horas; tempo que o IP ficará bloqueado
+AXES_FAILURE_LIMIT = 10  # tentativas de login permitidas
+AXES_COOLOFF_TIME = 0.1  # em horas; tempo que o IP ficará bloqueado
 AXES_LOCK_OUT_AT_FAILURE = True
 
 
