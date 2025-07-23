@@ -1,6 +1,25 @@
 from django.contrib import admin
 from .models import Clientes, Vendas, Produtos,Equipe,Ocorrencia
 from django.forms.models import BaseInlineFormSet
+from django.contrib import admin, messages
+from django.contrib.auth.models import User
+from axes.models import AccessLog
+
+# Função de ação para liberar bloqueio
+def liberar_bloqueio(modeladmin, request, queryset):
+    total_deletados = 0
+    for user in queryset:
+        deletados, _ = AccessLog.objects.filter(username=user.username).delete()
+        total_deletados += deletados
+    messages.success(request, f'Bloqueio liberado para {queryset.count()} usuário(s). Total de registros deletados: {total_deletados}.')
+liberar_bloqueio.short_description = "Liberar bloqueio de usuários selecionados"
+
+# Admin customizado do User com a ação
+class UserAdmin(admin.ModelAdmin):
+    actions = [liberar_bloqueio]
+
+admin.site.unregister(User)
+admin.site.register(User, UserAdmin)
 
 
 class OcorrenciaInlineFormSet(BaseInlineFormSet):

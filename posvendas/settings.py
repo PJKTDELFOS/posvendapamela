@@ -25,9 +25,9 @@ SECRET_KEY = config(
     'SECRET_KEY',)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS',cast=Csv())
+ALLOWED_HOSTS =config('ALLOWED_HOSTS',cast=Csv())
 
 
 # Application definition
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'posvendasapp',
     'crispy_forms',
     'crispy_bootstrap4',
+    'axes',
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
@@ -52,6 +53,7 @@ MIDDLEWARE = [
      'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'axes.middleware.AxesMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -80,6 +82,11 @@ TEMPLATES = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 WSGI_APPLICATION = 'posvendas.wsgi.application'
 
 
@@ -92,10 +99,11 @@ DATABASES = {
         'NAME': config('DB_NAME'),
         'USER': config('DB_USER'),
         'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='5432'),
+        'HOST': config('DB_HOST'),  
+
     }
 }
+
 
 
 # Password validation
@@ -116,6 +124,24 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'WARNING',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs/django.log',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'WARNING',
+            'propagate': True,
+        },
+    },
+}
 
 LANGUAGE_CODE = 'pt-BR'
 
@@ -132,7 +158,7 @@ USE_TZ = True
 
 STATICFILES_DIRS=[BASE_DIR / 'base_static']
 STATIC_URL = '/static/'
-#STATIC_ROOT=BASE_DIR/'static'
+STATIC_ROOT=BASE_DIR/'static'
 MEDIA_URL='/media/'
 MEDIA_ROOT=BASE_DIR/'media'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
@@ -145,3 +171,18 @@ LOGOUT_REDIRECT_URL='posvendasapp:login_sistema'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+#axes
+AXES_FAILURE_LIMIT = 3  # tentativas de login permitidas
+AXES_COOLOFF_TIME = 1  # em horas; tempo que o IP ficará bloqueado
+AXES_LOCK_OUT_AT_FAILURE = True
+
+
+#headers de segurança
+SECURE_HSTS_SECONDS = 31536000  # 1 ano
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+X_FRAME_OPTIONS = 'DENY'

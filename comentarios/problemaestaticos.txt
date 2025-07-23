@@ -41,3 +41,9 @@ validação  de vendas
         if not self.instance.vendedor: buscar campo do model
             self.add_error(None, ' falta vendedor')
         return cleaned_data
+
+
+
+        ERROR: (gcloud.app.deploy) Error Response: [13] Failed to create cloud build: com.google.net.rpc3.client.RpcClientException: <eye3 title='/ArgoAdminNoCloudAudit.CreateBuild, FAILED_PRECONDITION'/> APPLICATION_ERROR;google.devtoo
+ls.cloudbuild.v1/ArgoAdminNoCloudAudit.CreateBuild;invalid bucket "staging.posvendasoticas.appspot.com"; service account posvendasoticas@appspot.gserviceaccount.com does not have access to the bucket;AppErrorCode=9;StartTimeMs=1
+753243595027;unknown;ResFormat=uncompressed;ServerTimeSec=0.966380479;LogBytes=256;Non-FailFast;EndUserCredsRequested;EffSecLevel=privacy_and_integrity;ReqFormat=uncompressed;ReqID=264eadf5b6c89b2d;GlobalID=0;Server=[2002:a05:7104:190a:b0:5:4a4e:bcc6]:4001.
