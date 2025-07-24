@@ -74,13 +74,31 @@ class OcorrenciaInline(admin.TabularInline):
 #admin equipe-vendedores e outros cargos
 @admin.register(Equipe)
 class EquipeAdmin(admin.ModelAdmin):
-    list_display = ('get_username','Cargo')
+    list_display = ('get_username','Cargo','get_is_active')
     search_fields = ('get_username','Cargo')
+    list_filter = ('Usuario__is_active',)
+    actions = ['liberar_usuario']
 
     def get_username(self, obj):
         return obj.Usuario.username
-
     get_username.short_description = 'Usuário'
+
+    def get_is_active(self,obj):
+        return obj.Usuario.is_active
+    get_is_active.boolean = True
+    get_is_active.short_description = 'Liberado'
+
+
+    def liberar_usuario(self,request,queryset):
+        updated=0
+        for equipe in queryset:
+            if not equipe.Usuario.is_active:
+                equipe.Usuario.is_active=True
+                equipe.Usuario.save()
+                updated += 1
+        self.message_user(request,f'{updated} registro(s) liberado(s).')
+    liberar_usuario.short_description = 'Liberar usuarios'
+
 
 
 

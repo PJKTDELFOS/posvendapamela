@@ -35,6 +35,17 @@ class Login(LoginView):
 
     def get_success_url(self):
         return self.success_url
+
+    def form_valid(self, form):
+        messages.success(self.request,f'Usuario {form.get_user().username} Logado com Sucesso')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.warning(self.request,f'Credenciais invalidas ou usuario nao ativo')
+        return super().form_invalid(form)
+
+
+
 class Logout(LoginRequiredMixin,View):
     def get(self,*args,**kwargs):
         logout(self.request)

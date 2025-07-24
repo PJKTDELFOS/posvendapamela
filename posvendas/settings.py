@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=lambda v: [s.strip() for s in v.split(',')])
 
@@ -173,15 +173,15 @@ AXES_COOLOFF_TIME = 0.1  # em horas; tempo que o IP ficará bloqueado
 AXES_LOCK_OUT_AT_FAILURE = True
 
 
-#headers de segurança
-# SECURE_HSTS_SECONDS = 31536000  # 1 ano
-# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-# SECURE_HSTS_PRELOAD = True
-# SECURE_SSL_REDIRECT = not DEBUG
-# SESSION_COOKIE_SECURE = not DEBUG
-# CSRF_COOKIE_SECURE = not DEBUG
-# X_FRAME_OPTIONS = 'DENY'
-# SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+#headers de segurança-desabilitar para desenvolvimento
+SECURE_HSTS_SECONDS = 31536000  # 1 ano
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SECURE_SSL_REDIRECT = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+X_FRAME_OPTIONS = 'DENY'
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 import sys
 
 LOGGING = {

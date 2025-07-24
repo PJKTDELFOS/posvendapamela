@@ -21,10 +21,12 @@ class Main_services:
 
         user=form_usuario.save(commit=False)
         user.set_password(form_usuario.cleaned_data['password'])
+        user.is_active=False
         user.save()
 
         equipe=form_equipe.save(commit=False)
         equipe.Usuario=user
+
         equipe.save()
         return equipe
 
