@@ -13,14 +13,14 @@ AFAZER.txt
 ACESSODOCS.txt
 erros.txt
 .env.prod
-comentarios/.env.dev
+keys/.env.dev
 comentarios.txt
 anotacoesprocesso.txt
 DIVERSOS
 proximas_etapas.txt
 comentarios/
 comentarios/problemaestaticos.txt
-comentarios/_.txt
+keys/_.txt
 comentarios/problemas..txt
 keys/cloud_sql_proxy.exe.exe
 keys/posvendasoticas-b55b86f9800f.json
