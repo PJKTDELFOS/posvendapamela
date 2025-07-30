@@ -14,9 +14,17 @@ from django.contrib.auth.decorators import login_required
 from .forms import *
 from.vendasforms import *
 from posvendasapp.services.search_map import mapa_modelos
-from datetime import date,timedelta
+from datetime import date,timedelta,datetime
+from django.conf import settings
+
+import os
+
+from utils import tools_utils
 from django.core.paginator import Paginator
-from django.db.models import F, FloatField, ExpressionWrapper,Prefetch
+from django.db.models import F, FloatField, ExpressionWrapper,Prefetch,DateField,Func,Case,When,Value,IntegerField
+
+from django.db.models.functions import Now
+
 
 
 
@@ -43,9 +51,6 @@ class Login(LoginView):
     def form_invalid(self, form):
         messages.warning(self.request,f'Credenciais invalidas ou usuario nao ativo')
         return super().form_invalid(form)
-
-
-
 class Logout(LoginRequiredMixin,View):
     def get(self,*args,**kwargs):
         logout(self.request)
@@ -86,13 +91,10 @@ def busca_cpf(request):#função para busca de cpf antes de cadastrar cliente
     except Clientes.DoesNotExist:
         url=reverse('posvendasapp:cadastrar_cliente')
         return redirect(f'{url}?cpf={cpf_buscado}')
+
+@login_required
 def pagina_busca_cpf(request):
     return render(request,'posvendasapp/busca_cpf_cliente.html')
-
-
-
-
-
 
 
 
@@ -155,15 +157,17 @@ class Atualizar_membro_Equipe(LoginRequiredMixin,View):
                 'modo':'edição',
                 'errors': e.message_dict if hasattr(e, 'message_dict') else e.messages
                 })
-class DeleteEquipe(LoginRequiredMixin,DeleteView):
-    model = Equipe
-    success_url = reverse_lazy('posvendasapp:tabela_equipe')
-    pk_url_kwarg = 'pk'
-    template_name = 'posvendasapp/confirmação_delete_equipe.html'
-
+class DeleteEquipe(LoginRequiredMixin,View):
     def post(self, request, *args, **kwargs):
-        messages.success(self.request, 'Membro da equipe deletado com sucesso com sucesso!')
-        return super().post(request, *args, **kwargs)
+        membro = get_object_or_404(Equipe, pk=kwargs['equipe_pk'])
+
+        try:
+            membro.delete()
+            messages.warning(request, 'Menbro da Equipe excluído com sucesso!')
+        except:
+            messages.error(request, 'Erro ao excluir.')
+
+        return redirect('posvendasapp:tabela_equipe')
 class Listar_Staff(LoginRequiredMixin,ListView):
     model = Equipe
     template_name = 'posvendasapp/tabela_equipe.html'
@@ -182,8 +186,7 @@ class Listar_Staff(LoginRequiredMixin,ListView):
         context['cargos'] = Equipe.objects.values_list('Cargo', flat=True).distinct()
         context['filtro_cargo'] = self.cargo  # passa o filtro para o template
         return context
-
-class Membro_Equipe(DetailView,LoginRequiredMixin):
+class Membro_Equipe(LoginRequiredMixin,DetailView):
     model = Equipe
     template_name = 'posvendasapp/equipe_ficha.html'
     context_object_name = 'staff'
@@ -193,9 +196,6 @@ class Membro_Equipe(DetailView,LoginRequiredMixin):
         context=super().get_context_data(**kwargs)
 
         return context
-
-
-
 #views de cliente_______________________________________________________________________________________________________
 class Cadastrar_Cliente(LoginRequiredMixin,View):
     template_name = 'posvendasapp/cadastro_att_cliente.html'
@@ -245,24 +245,51 @@ class Atualizar_Cliente(LoginRequiredMixin,View):
                 'cliente_pk': cliente.pk,
 
             })
-class DeleteCliente(LoginRequiredMixin,DeleteView):
-    model = Clientes
-    success_url = reverse_lazy('posvendasapp:tabela_cliente')
-    pk_url_kwarg = 'pk'
-    template_name = 'posvendasapp/confirmação_delete_cliente.html'
-
+class DeleteCliente(LoginRequiredMixin,View):
     def post(self, request, *args, **kwargs):
-        messages.success(self.request, 'cliente deletado com sucesso com sucesso!')
-        return super().post(request, *args, **kwargs)
-class Listar_Clientes(ListView):
+        cliente = get_object_or_404(Clientes, pk=kwargs['cliente_pk'])
+        try:
+            cliente.delete()
+            messages.warning(request, 'Menbro da Equipe excluído com sucesso!')
+        except:
+            messages.error(request, 'Erro ao excluir.')
+
+        return redirect('posvendasapp:tabela_cliente')
+def delete_arquivos_cliente(request,pk):
+    if request.method == 'POST':
+        cliente=get_object_or_404(Clientes, pk=pk)
+        cliente_nome=f'{cliente.id}-{tools_utils.sanitize_name(cliente.Nome)}'
+        caminho_base=os.path.join(settings.MEDIA_ROOT,f'Clientes/{cliente_nome}')
+        arquivo_excluir=request.POST.get('arquivo')
+        if arquivo_excluir :
+            caminho_arquivo_excluir=os.path.join(caminho_base, arquivo_excluir)
+            if os.path.exists(caminho_arquivo_excluir):
+                try:
+                    os.remove(caminho_arquivo_excluir)
+                    messages.success(request, 'Arquivo excluido com sucesso!')
+                    print(caminho_arquivo_excluir)
+                except Exception as e:
+                    print(f"Erro ao deletar o arquivo: {e}")
+            else:
+                print("Parâmetros inválidos enviados na requisição.")
+    return redirect('posvendasapp:cliente',pk=pk)
+class Listar_Clientes(LoginRequiredMixin,ListView):
     model = Clientes
     template_name = 'posvendasapp/tabela_clientes.html'
     context_object_name = 'cliente'
     paginate_by = 10
 
     def get_queryset(self):
-        queryset = Clientes.objects.all()
         sort_param = self.request.GET.get('sort', '')
+        hoje=date.today()
+
+        queryset = Clientes.objects.annotate(
+            eh_aniversariante=Case(
+                When(aniversario__day=hoje.day, aniversario__month=hoje.month, then=Value(0)),  # menor = vai pro topo
+                default=Value(1),
+                output_field=IntegerField()
+            )
+        ).order_by('eh_aniversariante', 'Nome')
 
         # Aplica ordenação manual posterior com base no total
         if sort_param in ['valor_total', 'valor_total_asc']:
@@ -272,19 +299,42 @@ class Listar_Clientes(ListView):
                 reverse=(sort_param == 'valor_total')
             )
         elif sort_param == 'nome':
-            queryset = queryset.order_by('Nome')
+            queryset = queryset.order_by('eh_aniversariante','Nome')
         elif sort_param == 'nome_desc':
-            queryset = queryset.order_by('-Nome')
+            queryset = queryset.order_by('eh_aniversariante','-Nome')
+        elif sort_param == 'aniversario':
+            return Clientes.objects.filter(
+                aniversario__day=hoje.day,
+                aniversario__month=hoje.month
+            ).order_by('Nome')
         else:
-            queryset = queryset.order_by('-id')
+            queryset = queryset.order_by('eh_aniversariante','-id')
+
+
 
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        hoje = date.today()
+        context['aniversariantes'] = Clientes.objects.filter(
+            aniversario__day=hoje.day,
+            aniversario__month=hoje.month
+        )
+        context['today'] = date.today()
         return context
 
-class Cliente(DetailView, LoginRequiredMixin):
+    def get(self,request,*args,**kwargs):
+        hoje=date.today()
+        aniversariantes=Clientes.objects.filter(aniversario__day=hoje.day,
+                                                aniversario__month=hoje.month,
+                                                )
+        if aniversariantes.exists():
+            messages.info(self.request,f"🎉 Hoje temos "
+                                       f"{aniversariantes.count()} cliente(s) fazendo aniversário!")
+        return super().get(request,*args,**kwargs)
+
+class Cliente(LoginRequiredMixin,DetailView ):
     model = Clientes
     template_name = 'posvendasapp/cliente_ficha.html'
     context_object_name = 'cliente'
@@ -474,7 +524,21 @@ class Listar_Vendas(LoginRequiredMixin, ListView):
             )
             return lista
 
-        return qs.order_by('-id')
+
+
+        qs=qs.annotate(
+            previsao_retorno_ordenada_auto_lista=ExpressionWrapper(
+                F('Data_venda')+Func(
+                    F('Previsao'),
+                    function='make_interval',
+                    template="%(function)s(days => %(expressions)s)"),
+                    output_field=DateField(),
+            )
+        ).order_by('previsao_retorno_ordenada_auto_lista')
+
+
+
+        return qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -503,8 +567,6 @@ class Delete_Venda(LoginRequiredMixin,View):
             messages.error(request, 'Erro ao excluir: venda está vinculado a outros registros.')
 
         return redirect('posvendasapp:tabela_venda')
-
-
 class Venda_(LoginRequiredMixin,DetailView ):
     model = Vendas
     template_name = 'posvendasapp/venda_ficha.html'
@@ -571,8 +633,6 @@ class Deletar_Produto(LoginRequiredMixin,View):
             messages.error(request, 'Erro ao excluir: produto está vinculado a outros registros.')
 
         return redirect('posvendasapp:tabela_produtos_vendidos')
-
-
 class Delete_produto_tabela(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         produto = get_object_or_404(Produtos, pk=kwargs['produto_pk'])
@@ -585,7 +645,6 @@ class Delete_produto_tabela(LoginRequiredMixin, View):
 
         return redirect('posvendasapp:tabela_produtos_vendidos')
 
-
 class DeleteOcorrencia(LoginRequiredMixin,DeleteView):
     model = Vendas
     success_url = reverse_lazy('posvendasapp:tabela_vendas')
@@ -594,7 +653,6 @@ class DeleteOcorrencia(LoginRequiredMixin,DeleteView):
     def post(self, request, *args, **kwargs):
         messages.success(self.request, 'Ocorrencia deletado com sucesso!')
         return super().post(request, *args, **kwargs)
-
 
 class Listar_Produtos_Vendidos(LoginRequiredMixin, ListView):
     model = Produtos

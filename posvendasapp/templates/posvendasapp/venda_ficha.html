@@ -9,6 +9,12 @@
             <span class="campo-label">Cliente:</span>
             <span class="campo-valor">{{ venda.cliente.Nome }}</span>
         </div>
+
+        <div class="linha-detalhe">
+            <span class="campo-label">Sequencia de venda:</span>
+            <span class="campo-valor">{{ venda.sequencia_venda }}</span>
+        </div>
+
         <div class="linha-detalhe">
             <span class="campo-label">Vendedor:</span>
             <span class="campo-valor">{{ venda.vendedor.Usuario.username }}  </span>
@@ -33,6 +39,8 @@
             <span class="campo-label">Previsao de retorno:</span>
             <span class="campo-valor">{{ venda.previsao_de_retorno }}</span>
         </div>
+
+
 
 
         <div class="botoes-acao-duas-colunas">

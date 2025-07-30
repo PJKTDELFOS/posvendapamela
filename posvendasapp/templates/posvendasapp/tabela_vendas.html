@@ -40,6 +40,7 @@
             <thead>
             <tr>
                 <th>Venda-id</th>
+                <th>Sequencia</th>
                 <th>Cliente</th>
                 <th>Data da Venda</th>
                 <th>Previsão (dias)</th>
@@ -53,6 +54,7 @@
             {% for venda in vendas %}
                 <tr>
                     <td data-label="id"><a href="{% url 'posvendasapp:ficha_venda' venda.pk %}">{{ venda.pk }}</a></td>
+                    <td data-label="Cliente">{{ venda.sequencia_venda }}</td>
                     <td data-label="Cliente">{{ venda.cliente.Nome }}</td>
                     <td data-label="Data da Venda">{{ venda.Data_venda|date:"d/m/Y" }}</td>
                     <td data-label="Previsão (dias)">{{ venda.Previsao|default:"-" }}</td>

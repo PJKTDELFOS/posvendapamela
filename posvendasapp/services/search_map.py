@@ -5,7 +5,7 @@ from posvendasapp.models import *
 mapa_modelos = {
     'cliente': {
         'queryset': Clientes.objects.all(),
-        'campos': ['Nome', 'contato']
+        'campos': ['Nome', 'tel_contato','cpf','email']
         # 'Arquivos' removido porque FileField não é pesquisável por texto
     },
     'produto': {
@@ -18,7 +18,7 @@ mapa_modelos = {
     },
     'venda': {
         'queryset': Vendas.objects.select_related('cliente', 'vendedor').all(),
-        'campos': ['cliente__Nome', 'vendedor__Usuario__username']
+        'campos': ['cliente__Nome', 'vendedor__Usuario__username','sequencia_venda']
 
     },
     'ocorrencia': {

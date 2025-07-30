@@ -13,7 +13,9 @@
                             <li style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.2); font-size: 1rem;">
                                 {% if modelo == 'cliente' %}
                                     <strong>Nome:</strong> <a href="#">{{ item.Nome }}</a> |
-                                    <strong>Contato:</strong> {{ item.contato }}
+                                    <strong>Contato:</strong> {{ item.tel_contato }}
+                                    <strong>CPF:</strong> {{ item.cpf }}
+
 
                                 {% elif modelo == 'venda' %}
                                     <strong>Cliente:</strong> <a href="#">{{ item.cliente.Nome }}</a> |

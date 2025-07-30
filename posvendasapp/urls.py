@@ -50,6 +50,9 @@ urlpatterns = [
     path('tabela_cliente/<int:pk>/', views.Cliente.as_view(), name='cliente'),
     path('tabela_cliente/<int:pk>/editar', views.Atualizar_Cliente.as_view(), name='atualizar_cliente'),
     path('tabela_cliente/<int:pk>/deletar', views.DeleteCliente.as_view(), name='deletar_cliente'),
+    path('tabela_cliente/<int:pk>/deletar_arquivo', views.delete_arquivos_cliente, name='deletar_arquivo_cliente'),
+
+
 #_____________________________________________________________________________________________________________#
     #vendas
     path('tabela_venda/', views.Listar_Vendas.as_view(), name='tabela_venda'),

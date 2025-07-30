@@ -1,9 +1,12 @@
-from django.contrib import admin
+from datetime import date
+
 from .models import Clientes, Vendas, Produtos,Equipe,Ocorrencia
 from django.forms.models import BaseInlineFormSet
 from django.contrib import admin, messages
 from django.contrib.auth.models import User
 from axes.models import AccessLog
+from django.db.models import F, ExpressionWrapper,DateField,DurationField
+from django.utils.timezone import timedelta
 
 # Função de ação para liberar bloqueio
 def liberar_bloqueio(modeladmin, request, queryset):
@@ -20,6 +23,26 @@ class UserAdmin(admin.ModelAdmin):
 
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
+
+class Aniversariantes(admin.SimpleListFilter):
+    title = 'Aniversariantes'
+    parameter_name = 'aniversariantes'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('sim','sim'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'sim':
+            hoje = date.today()
+            return queryset.filter(aniversario__day=hoje.day,
+                                   aniversario__month=hoje.month,)
+        return queryset
+
+
+
+
 
 
 class OcorrenciaInlineFormSet(BaseInlineFormSet):
@@ -43,7 +66,8 @@ class VendasInline(admin.TabularInline):
     model = Vendas
     extra = 0
     readonly_fields = ('pk','Data_venda','valor_total_venda_formatada', 'previsao_de_retorno','get_vendedor_username')
-    fields = ('pk','Data_venda','valor_total_venda_formatada', 'previsao_de_retorno','get_vendedor_username')
+    fields = ('pk','Data_venda','valor_total_venda_formatada',
+              'previsao_de_retorno','get_vendedor_username','sequencia_venda')
     fk_name = 'cliente'# aqui usa o campo
 
     def  get_vendedor_username(self,obj):
@@ -105,20 +129,40 @@ class EquipeAdmin(admin.ModelAdmin):
 # Admin de Clientes com Vendas Inline
 @admin.register(Clientes)
 class ClientesAdmin(admin.ModelAdmin):
-    list_display = ('id','Nome', 'contato', 'valor_total_venda_do_cliente_formatada','cpf')
-    search_fields = ('Nome', 'contato','cpf')
+    list_display = ('id','Nome', 'tel_contato', 'valor_total_venda_do_cliente_formatada','cpf','aniversario')
+    search_fields = ('Nome', 'tel_contato','cpf','email')
     inlines = [VendasInline]
     readonly_fields = ('valor_total_venda_do_cliente_formatada',)
+    list_filter = (Aniversariantes,)
+
+
+
 
 
 # Admin de Vendas com Produtos Inline
 @admin.register(Vendas)
 class VendasAdmin(admin.ModelAdmin):
-    list_display = ('id','cliente', 'Data_venda', 'previsao_de_retorno', 'valor_total_venda_formatada','vendedor')
-    search_fields = ('cliente__Nome','vendedor__Usuario__username')
+    list_display = ('id','cliente', 'Data_venda', 'previsao_retorno_formatada', 'valor_total_venda_formatada','vendedor','sequencia_venda')
+    search_fields = ('cliente__Nome','vendedor__Usuario__username','sequencia_venda')
     list_filter = ('Data_venda',)
     inlines = [ProdutosInline,OcorrenciaInline]
     readonly_fields = ('valor_total_venda_formatada', 'previsao_de_retorno','vendedor')
+
+    def get_queryset(self, request):
+        qs=super().get_queryset(request)
+        qs=qs.annotate(
+            previsao_retorno_ordenacao=ExpressionWrapper(
+                F('Data_venda')+F('Previsao')*timedelta(days=1),
+                output_field=DateField(),
+            )
+        )
+        return qs.order_by('previsao_retorno_ordenacao')
+
+
+    def previsao_retorno_formatada(self,obj):
+        return obj.previsao_retorno_ordenacao.strftime('%d/%m/%Y') if obj.previsao_retorno_ordenacao else None
+    previsao_retorno_formatada.admin_order_field = 'previsao_retorno_ordenacao'
+    previsao_retorno_formatada.short_description = 'Previsão de Retorno'
 
     def  get_vendedor_username(self,obj):
         return obj.vendedor.Usuario.username

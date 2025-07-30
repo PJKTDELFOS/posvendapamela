@@ -889,3 +889,7 @@ div[id^="div_id_"][id$="-DELETE"] {
   background: rgba(13, 110, 253, 0.3); /* azul */
   border: 1px solid rgba(13, 110, 253, 0.9);
 }
+.aniversariante {
+    background-color: #fff8dc; /* um amarelo claro */
+    font-weight: bold;
+}

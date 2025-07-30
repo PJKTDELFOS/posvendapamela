@@ -27,11 +27,22 @@
         <div class="linha-detalhe">
             <span class="campo-label">Documentos disponíveis:</span>
             {% if cliente.Arquivos %}
-                <span class="campo-valor">
-      <a href="{{ cliente.Arquivos.url }}" download>{{ cliente.nome_arquivo }}</a>
+                <span class="campo-valor" style="display: flex; align-items: center; gap: 10px;">
+            <a href="{{ cliente.Arquivos.url }}" download class="botao-link">
+                {{ cliente.nome_arquivo }}
+            </a>
+
+            <form method="POST" action="{% url 'posvendasapp:deletar_arquivo_cliente' cliente.pk %}"
+                  style="display: inline;">
+                {% csrf_token %}
+                <input type="hidden" name="arquivo" value="{{ cliente.nome_arquivo }}">
+                <button type="submit" class="botao-vermelho">
+                    Deletar
+                </button>
+            </form>
         </span>
             {% else %}
-                <span class="campo-valor">Nenhum documento encontrado</span>
+                <span class="campo-valor">Nenhum arquivo disponível.</span>
             {% endif %}
         </div>
 
@@ -39,8 +50,8 @@
         <div class="botoes-acao-duas-colunas">
             <a class="ordenar-btn" href="{% url 'posvendasapp:atualizar_cliente' cliente.pk %}">Editar</a>
             <a class="ordenar-btn" href="{% url 'posvendasapp:cadastrar_venda' cliente.pk %}">Cadastrar Venda</a>
-            <a class="ordenar-btn" href="{% url 'posvendasapp:deletar_cliente' cliente.pk %}">Excluir</a>
-            <a class="ordenar-btn" href="{% url 'posvendasapp:tabela_cliente' %}">← Voltar para lista</a>
+            <a class="delete-btn" href="{% url 'posvendasapp:deletar_cliente' cliente.pk %}">Excluir</a>
+            <a class="btn-voltar" href="{% url 'posvendasapp:tabela_cliente' %}">← Voltar para lista</a>
         </div>
     </div>
 
@@ -86,6 +97,7 @@
                 <thead>
                 <tr>
                     <th>Venda-id</th>
+                    <th>Sequencia</th>
                     <th>Cliente</th>
                     <th>Data da Venda</th>
                     <th>Previsão (dias)</th>
@@ -98,7 +110,9 @@
                 <tbody>
                 {% for venda in vendas %}
                     <tr>
-                        <td data-label="id">{{ venda.pk }}</td>
+                        <td data-label="id"><a href="{% url 'posvendasapp:ficha_venda' venda.pk %}">{{ venda.pk }}</a>
+                        </td>
+                        <td data-label="Cliente">{{ venda.sequencia_venda }}</td>
                         <td data-label="Cliente">{{ venda.cliente.Nome }}</td>
                         <td data-label="Data da Venda">{{ venda.Data_venda|date:"d/m/Y" }}</td>
                         <td data-label="Previsão (dias)">{{ venda.Previsao|default:"-" }}</td>

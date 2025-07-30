@@ -33,6 +33,12 @@
                     Valor Total (Menor)
                 </label>
 
+                <label>
+                    <input type="radio" name="sort" value="aniversario"
+                           {% if request.GET.sort == 'aniversario' %}checked{% endif %}>
+                    Somente Aniversariantes
+                </label>
+
                 <button type="submit">Filtrar</button>
             </fieldset>
         </form>
@@ -46,15 +52,16 @@
                 <th>CPF</th>
                 <th>Valor Total de Vendas</th>
                 <th>Ações</th>
-            </tr>
+            </tr >
             </thead>
             <tbody>
             {% for cliente in cliente %}
-                <tr>
+                <tr {% if cliente.aniversario.day == today.day and cliente.aniversario.month == today.month %}class="aniversariante"{% endif %}>
                     <td data-label="ID">
                         <a href="{% url 'posvendasapp:cliente' cliente.pk %}">
                             {{ cliente.pk }}
                         </a>
+                    </td>
                     <td>{{ cliente.Nome }}</td>
                     <td>{{ cliente.contato }}</td>
                     <td>{{ cliente.cpf }}</td>

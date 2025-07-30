@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from utils import tools_utils
 from datetime import timedelta,date
 import os
+from django.core.validators import RegexValidator
 from django.utils import timezone
 # Create your models here.
 
@@ -29,8 +30,16 @@ class Equipe(models.Model):
 
 class Clientes(models.Model):
     Nome=models.CharField(default=None, max_length=255,blank=False,null=False,verbose_name='Nome')
-    contato=models.CharField(default=None, max_length=255,blank=False,null=False,verbose_name='Contato')
+    tel_contato=models.CharField(default=None, max_length=255,
+                                 blank=False,null=False,verbose_name='telefone de contato',validators=[
+            RegexValidator(regex=r'^\d{10,11}$',
+                           message='digite somente numeros',
+                           code='Numero Invalido')#terminar a validação via regex
+        ]
+                                 )
+    email=models.CharField(default=None, max_length=255,blank=True,null=True,verbose_name='Email')
     cpf = models.CharField(max_length=14,blank=False,null=False,verbose_name='CPF',unique=True, )
+    aniversario=models.DateField(default=None, blank=True, null=True, verbose_name='Data de Aniversario')
     Arquivos=models.FileField(upload_to=tools_utils.cliente_upload_path,blank=True,null=True,verbose_name='Arquivos')
 
     def __str__(self):
@@ -39,13 +48,13 @@ class Clientes(models.Model):
     def nome_arquivo(self):
         if self.Arquivos:
             return os.path.basename(self.Arquivos.name)
+        return
 
     def clean(self):
         error_messages={}
         cpf_valido=tools_utils.valida_cpf(self.cpf)
         if not cpf_valido:
             error_messages['cpf']='digite um cpf valido'
-
         if error_messages:
             raise ValidationError(error_messages)
 
@@ -78,6 +87,7 @@ class Vendas(models.Model):
     Data_venda = models.DateField(default=None, blank=False, null=False, verbose_name='Data de venda')
     Previsao = models.IntegerField(blank=True, null=True, verbose_name='Previsao')
     vendedor=models.ForeignKey(Equipe,on_delete=models.CASCADE,related_name='Vendedor',verbose_name='Vendedor',blank=False,null=False,)
+    sequencia_venda=models.CharField(max_length=12,blank=True, null=True, verbose_name='Sequencia de venda',default=None,unique=True)
 
     def __str__(self):
         cliente=self.cliente

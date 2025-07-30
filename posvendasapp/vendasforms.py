@@ -12,14 +12,18 @@ class Clienteforms(forms.ModelForm):
         fields = '__all__'
         labels={
             'Nome':'Cliente',
-            'contato':'Contato do cliente',
+            'tel_contato':'Contato do cliente',
             'Arquivos':'Documentos',
+            'aniversario':'Data de Aniversario',
         }
 
         widgets={
             'Nome':forms.TextInput(attrs={'class':'form-control'}),
-            'contato':forms.TextInput(attrs={'class':'form-control'}),
+            'tel_contato':forms.TextInput(attrs={'class':'form-control'}),
             'Arquivos':forms.FileInput(attrs={'class':'form-control'}),
+            'aniversario':forms.DateInput(format='%Y-%m-%d',attrs={'type':'date'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'cpf': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
 
