@@ -29,7 +29,7 @@ class Equipe(models.Model):
 
 
 class Clientes(models.Model):
-    Nome=models.CharField(default=None, max_length=255,blank=False,null=False,verbose_name='Nome')
+    Nome=models.CharField(default=None, max_length=254,blank=False,null=False,verbose_name='Nome')
     tel_contato=models.CharField(default=None, max_length=255,
                                  blank=False,null=False,verbose_name='telefone de contato',validators=[
             RegexValidator(regex=r'^\d{10,11}$',
