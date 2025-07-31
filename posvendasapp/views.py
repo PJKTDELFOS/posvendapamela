@@ -11,6 +11,8 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy,reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+
+from utils.tools_utils import sanitize_name
 from .forms import *
 from.vendasforms import *
 from posvendasapp.services.search_map import mapa_modelos
@@ -91,7 +93,6 @@ def busca_cpf(request):#função para busca de cpf antes de cadastrar cliente
     except Clientes.DoesNotExist:
         url=reverse('posvendasapp:cadastrar_cliente')
         return redirect(f'{url}?cpf={cpf_buscado}')
-
 @login_required
 def pagina_busca_cpf(request):
     return render(request,'posvendasapp/busca_cpf_cliente.html')
@@ -159,7 +160,7 @@ class Atualizar_membro_Equipe(LoginRequiredMixin,View):
                 })
 class DeleteEquipe(LoginRequiredMixin,View):
     def post(self, request, *args, **kwargs):
-        membro = get_object_or_404(Equipe, pk=kwargs['equipe_pk'])
+        membro = get_object_or_404(Equipe, pk=kwargs['pk'])
 
         try:
             membro.delete()
@@ -196,6 +197,9 @@ class Membro_Equipe(LoginRequiredMixin,DetailView):
         context=super().get_context_data(**kwargs)
 
         return context
+
+
+
 #views de cliente_______________________________________________________________________________________________________
 class Cadastrar_Cliente(LoginRequiredMixin,View):
     template_name = 'posvendasapp/cadastro_att_cliente.html'
@@ -247,7 +251,7 @@ class Atualizar_Cliente(LoginRequiredMixin,View):
             })
 class DeleteCliente(LoginRequiredMixin,View):
     def post(self, request, *args, **kwargs):
-        cliente = get_object_or_404(Clientes, pk=kwargs['cliente_pk'])
+        cliente = get_object_or_404(Clientes, pk=kwargs['pk'])
         try:
             cliente.delete()
             messages.warning(request, 'Menbro da Equipe excluído com sucesso!')
@@ -255,24 +259,6 @@ class DeleteCliente(LoginRequiredMixin,View):
             messages.error(request, 'Erro ao excluir.')
 
         return redirect('posvendasapp:tabela_cliente')
-def delete_arquivos_cliente(request,pk):
-    if request.method == 'POST':
-        cliente=get_object_or_404(Clientes, pk=pk)
-        cliente_nome=f'{cliente.id}-{tools_utils.sanitize_name(cliente.Nome)}'
-        caminho_base=os.path.join(settings.MEDIA_ROOT,f'Clientes/{cliente_nome}')
-        arquivo_excluir=request.POST.get('arquivo')
-        if arquivo_excluir :
-            caminho_arquivo_excluir=os.path.join(caminho_base, arquivo_excluir)
-            if os.path.exists(caminho_arquivo_excluir):
-                try:
-                    os.remove(caminho_arquivo_excluir)
-                    messages.success(request, 'Arquivo excluido com sucesso!')
-                    print(caminho_arquivo_excluir)
-                except Exception as e:
-                    print(f"Erro ao deletar o arquivo: {e}")
-            else:
-                print("Parâmetros inválidos enviados na requisição.")
-    return redirect('posvendasapp:cliente',pk=pk)
 class Listar_Clientes(LoginRequiredMixin,ListView):
     model = Clientes
     template_name = 'posvendasapp/tabela_clientes.html'
@@ -316,6 +302,7 @@ class Listar_Clientes(LoginRequiredMixin,ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
         hoje = date.today()
         context['aniversariantes'] = Clientes.objects.filter(
             aniversario__day=hoje.day,
@@ -342,9 +329,23 @@ class Cliente(LoginRequiredMixin,DetailView ):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
         cliente = self.get_object()
+
+        nome_pasta = f"{cliente.id}-{sanitize_name(cliente.Nome)}"
+        caminho_pasta = os.path.join(settings.MEDIA_ROOT, 'Clientes', nome_pasta)
+        print(caminho_pasta,'caminho pasta debug')
+
+        arquivos = []
+        if os.path.exists(caminho_pasta):
+            arquivos = os.listdir(caminho_pasta)
+
+        context['arquivos'] = arquivos
+        context['nome_pasta'] = nome_pasta
+        context['MEDIA_URL'] = settings.MEDIA_URL
+
+
         vendas = cliente.Vendas.all()
+
 
         nome = self.request.GET.get('nome')
         retorno = self.request.GET.get('retorno')
@@ -378,7 +379,25 @@ class Cliente(LoginRequiredMixin,DetailView ):
         return context
 
 
-
+def delete_arquivos_cliente(request,pk):
+    if request.method == 'POST':
+        cliente=get_object_or_404(Clientes, pk=pk)
+        cliente_nome=f'{cliente.id}-{tools_utils.sanitize_name(cliente.Nome)}'
+        caminho_base=os.path.join(settings.MEDIA_ROOT,'Clientes',cliente_nome)
+        print(caminho_base,'caminho base')
+        arquivo_excluir=request.POST.get('arquivo')
+        if arquivo_excluir :
+            caminho_arquivo_excluir=os.path.join(caminho_base, arquivo_excluir)
+            if os.path.exists(caminho_arquivo_excluir):
+                try:
+                    os.remove(caminho_arquivo_excluir)
+                    messages.success(request, 'Arquivo excluido com sucesso!')
+                    print(caminho_arquivo_excluir)
+                except Exception as e:
+                    print(f"Erro ao deletar o arquivo: {e}")
+            else:
+                print("Parâmetros inválidos enviados na requisição.")
+    return redirect('posvendasapp:cliente',pk=pk)
 
 
 #views de vendas_______________________________________________________________________________________________________
@@ -556,7 +575,6 @@ class Listar_Vendas(LoginRequiredMixin, ListView):
 
         return context
 class Delete_Venda(LoginRequiredMixin,View):
-
     def post(self, request, *args, **kwargs):
         venda_deletada = get_object_or_404(Vendas, pk=kwargs['pk'])
 
@@ -646,13 +664,16 @@ class Delete_produto_tabela(LoginRequiredMixin, View):
         return redirect('posvendasapp:tabela_produtos_vendidos')
 
 class DeleteOcorrencia(LoginRequiredMixin,DeleteView):
-    model = Vendas
-    success_url = reverse_lazy('posvendasapp:tabela_vendas')
-    pk_url_kwarg = 'ocorrencia_pk'
-
     def post(self, request, *args, **kwargs):
-        messages.success(self.request, 'Ocorrencia deletado com sucesso!')
-        return super().post(request, *args, **kwargs)
+        venda_acessada = get_object_or_404(Vendas, pk=kwargs['pk'])
+        ocorrencia_deletado = get_object_or_404(Ocorrencia, pk=kwargs['ocorrencia_pk'], venda=venda_acessada)
+        try:
+            ocorrencia_deletado.delete()
+            messages.warning(request, 'Produto excluído com sucesso!')
+        except:
+            messages.error(request, 'Erro ao excluir: produto está vinculado a outros registros.')
+
+        return redirect('posvendasapp:tabela_produtos_vendidos')
 
 class Listar_Produtos_Vendidos(LoginRequiredMixin, ListView):
     model = Produtos

@@ -42,7 +42,13 @@
                     <td data-label="Ações">
                         <div class="action-buttons">
                             <a href="{% url 'posvendasapp:atualizar_equipe' membro.pk %}" class="edit">Editar</a>
-                            <a href="{% url 'posvendasapp:deletar_equipe' membro.pk %}" class="delete">Excluir</a>
+                            <form method="post"
+                                      class="form-excluir"
+                                      action="{% url 'posvendasapp:deletar_equipe' membro.pk %}"
+                                      onsubmit="if(confirm('Deseja realmente excluir este produto?')) { this.querySelector('button').disabled = true; return true; } else { return false; }">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-excluir">Excluir</button>
+                                </form>
                         </div>
                     </td>
                 </tr>

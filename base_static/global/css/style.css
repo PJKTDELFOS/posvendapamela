@@ -893,3 +893,55 @@ div[id^="div_id_"][id$="-DELETE"] {
     background-color: #fff8dc; /* um amarelo claro */
     font-weight: bold;
 }
+
+.scroll-box {
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-top: 5px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 5px;
+}
+
+.arquivo-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.arquivo-item a {
+    color: #fff;
+    text-decoration: none;
+    word-break: break-word;
+    max-width: 70%;
+}
+
+.arquivo-item form {
+    margin-left: 10px;
+}
+.lista-arquivos {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.arquivo-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 10px;
+}
+
+.icone-arquivo {
+    font-size: 1.2em;
+}
+
+.botao-deletar {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: red;
+    font-size: 1em;
+}

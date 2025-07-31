@@ -11,12 +11,18 @@
         </div>
         <div class="linha-detalhe">
             <span class="campo-label">Contato:</span>
-            <span class="campo-valor">{{ cliente.contato }} </span>
+            <span class="campo-valor">{{ cliente.tel_contato }} </span>
         </div>
 
         <div class="linha-detalhe">
             <span class="campo-label">CPF:</span>
             <span class="campo-valor">{{ cliente.cpf }}</span>
+        </div>
+
+
+        <div class="linha-detalhe">
+            <span class="campo-label">Aniversario:</span>
+            <span class="campo-valor">{{ cliente.aniversario }}</span>
         </div>
 
         <div class="linha-detalhe">
@@ -26,32 +32,41 @@
 
         <div class="linha-detalhe">
             <span class="campo-label">Documentos disponíveis:</span>
-            {% if cliente.Arquivos %}
-                <span class="campo-valor" style="display: flex; align-items: center; gap: 10px;">
-            <a href="{{ cliente.Arquivos.url }}" download class="botao-link">
-                {{ cliente.nome_arquivo }}
-            </a>
-
-            <form method="POST" action="{% url 'posvendasapp:deletar_arquivo_cliente' cliente.pk %}"
-                  style="display: inline;">
-                {% csrf_token %}
-                <input type="hidden" name="arquivo" value="{{ cliente.nome_arquivo }}">
-                <button type="submit" class="botao-vermelho">
-                    Deletar
-                </button>
-            </form>
-        </span>
-            {% else %}
-                <span class="campo-valor">Nenhum arquivo disponível.</span>
-            {% endif %}
+            <div class="campo-valor scroll-box">
+                {% if arquivos %}
+                    <ul class="lista-arquivos">
+                        {% for arquivo in arquivos %}
+                            <li class="arquivo-item">
+                                <span class="icone-arquivo">📄</span>
+                                <a href="{{ MEDIA_URL }}Clientes/{{ nome_pasta }}/{{ arquivo }}" download>
+                                    {{ arquivo|slice:":30" }}{% if arquivo|length > 30 %}...{% endif %}
+                                </a>
+                                <form action="{% url 'posvendasapp:deletar_arquivo_cliente' cliente.pk %}" method="POST"
+                                      style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="arquivo" value="{{ arquivo }}">
+                                    <button type="submit" class="botao-vermelho botao-deletar">🗑️</button>
+                                </form>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <span>Nenhum documento encontrado</span>
+                {% endif %}
+            </div>
         </div>
 
-
         <div class="botoes-acao-duas-colunas">
-            <a class="ordenar-btn" href="{% url 'posvendasapp:atualizar_cliente' cliente.pk %}">Editar</a>
-            <a class="ordenar-btn" href="{% url 'posvendasapp:cadastrar_venda' cliente.pk %}">Cadastrar Venda</a>
-            <a class="delete-btn" href="{% url 'posvendasapp:deletar_cliente' cliente.pk %}">Excluir</a>
-            <a class="btn-voltar" href="{% url 'posvendasapp:tabela_cliente' %}">← Voltar para lista</a>
+            <a class=" btn btn-editar" href="{% url 'posvendasapp:atualizar_cliente' cliente.pk %}">Editar</a>
+            <a class="btn btn-editar" href="{% url 'posvendasapp:cadastrar_venda' cliente.pk %}">Cadastrar Venda</a>
+            <form method="post"
+                  class="form-excluir"
+                  action="{% url 'posvendasapp:deletar_cliente' cliente.pk %}"
+                  onsubmit="if(confirm('Deseja realmente excluir este produto?')) { this.querySelector('button').disabled = true; return true; } else { return false; }">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-excluir">Excluir</button>
+            </form>
+            <a class="btn btn-voltar" href="{% url 'posvendasapp:tabela_cliente' %}">← Voltar para lista</a>
         </div>
     </div>
 
@@ -112,7 +127,9 @@
                     <tr>
                         <td data-label="id"><a href="{% url 'posvendasapp:ficha_venda' venda.pk %}">{{ venda.pk }}</a>
                         </td>
-                        <td data-label="Cliente">{{ venda.sequencia_venda }}</td>
+                        <td data-label="Cliente">
+                            <a href="{% url 'posvendasapp:ficha_venda' venda.pk %}">{{ venda.pk }}</a>
+                            {{ venda.sequencia_venda }}</td>
                         <td data-label="Cliente">{{ venda.cliente.Nome }}</td>
                         <td data-label="Data da Venda">{{ venda.Data_venda|date:"d/m/Y" }}</td>
                         <td data-label="Previsão (dias)">{{ venda.Previsao|default:"-" }}</td>
@@ -130,7 +147,13 @@
                         <td data-label="Ações">
                             <div class="action-buttons">
                                 <a href="{% url 'posvendasapp:atualizar_venda' venda.pk %}" class="edit">Editar</a>
-                                <a href="{% url 'posvendasapp:deletar_venda' venda.pk %}" class="delete">Apagar</a>
+                                <form method="post"
+                                      class="form-excluir"
+                                      action="{% url 'posvendasapp:deletar_venda' venda.pk %}"
+                                      onsubmit="if(confirm('Deseja realmente excluir este produto?')) { this.querySelector('button').disabled = true; return true; } else { return false; }">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-excluir">Excluir</button>
+                                </form>
                             </div>
                         </td>
                     </tr>
