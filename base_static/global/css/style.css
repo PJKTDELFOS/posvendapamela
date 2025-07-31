@@ -609,7 +609,12 @@ div[id^="div_id_"][id$="-DELETE"] {
   text-align: center;
 }
 
-.btn-ordenar {
+.btn-ordenar,
+.btn-ordenar:link,
+.btn-ordenar:visited {
+  display: inline-flex;
+  align-items: center;          /* centraliza o texto verticalmente */
+  justify-content: center;      /* centraliza horizontalmente */
   background-color: #007bff;
   color: white;
   border: none;
@@ -619,6 +624,9 @@ div[id^="div_id_"][id$="-DELETE"] {
   font-weight: bold;
   font-size: 1.1rem;
   transition: background-color 0.3s ease;
+  text-decoration: none;
+  height: 40px;
+  box-sizing: border-box;
 }
 
 .btn-ordenar:hover {

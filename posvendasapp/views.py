@@ -267,6 +267,7 @@ class Listar_Clientes(LoginRequiredMixin,ListView):
 
     def get_queryset(self):
         sort_param = self.request.GET.get('sort', '')
+        filtro_param=self.request.GET.get('filtro', '')
         hoje=date.today()
 
         queryset = Clientes.objects.annotate(
@@ -276,6 +277,10 @@ class Listar_Clientes(LoginRequiredMixin,ListView):
                 output_field=IntegerField()
             )
         ).order_by('eh_aniversariante', 'Nome')
+
+        if filtro_param == 'aniversariantes_mes':
+            queryset = queryset.filter(aniversario__month=hoje.month)
+        queryset = queryset.order_by('eh_aniversariante', 'Nome')
 
         # Aplica ordenação manual posterior com base no total
         if sort_param in ['valor_total', 'valor_total_asc']:

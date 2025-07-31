@@ -36,10 +36,20 @@
                 <label>
                     <input type="radio" name="sort" value="aniversario"
                            {% if request.GET.sort == 'aniversario' %}checked{% endif %}>
-                    Somente Aniversariantes
+                    Somente Aniversariantes de Hoje
                 </label>
 
-                <button type="submit">Filtrar</button>
+                <br><br>
+
+                <label>
+                    <input type="checkbox" name="filtro" value="aniversariantes_mes"
+                           {% if request.GET.filtro == 'aniversariantes_mes' %}checked{% endif %}>
+                    Mostrar Aniversariantes do Mês
+                </label>
+
+                <br><br>
+                <button type="submit" class="btn-ordenar">Aplicar Filtros</button>
+                <a href="." class="btn-ordenar">Limpar Filtros</a>
             </fieldset>
         </form>
 
@@ -53,7 +63,7 @@
                 <th>aniversario</th>
                 <th>Valor Total de Vendas</th>
                 <th>Ações</th>
-            </tr >
+            </tr>
             </thead>
             <tbody>
             {% for cliente in cliente %}
@@ -71,12 +81,12 @@
                     <td class="action-buttons">
                         <a href="{% url 'posvendasapp:atualizar_cliente' cliente.pk %}" class="edit">Editar</a>
                         <form method="post"
-                                      class="form-excluir"
-                                      action="{% url 'posvendasapp:deletar_cliente' cliente.pk %}"
-                                      onsubmit="if(confirm('Deseja realmente excluir este produto?')) { this.querySelector('button').disabled = true; return true; } else { return false; }">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-excluir">Excluir</button>
-                                </form>
+                              class="form-excluir"
+                              action="{% url 'posvendasapp:deletar_cliente' cliente.pk %}"
+                              onsubmit="if(confirm('Deseja realmente excluir este produto?')) { this.querySelector('button').disabled = true; return true; } else { return false; }">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-excluir">Excluir</button>
+                        </form>
                     </td>
                 </tr>
             {% empty %}
