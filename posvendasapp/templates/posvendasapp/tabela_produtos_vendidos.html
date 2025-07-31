@@ -89,7 +89,7 @@
                         <div class="action-buttons">
                             <form method="post"
                                   class="delete"
-                                  action="{% url 'posvendasapp:delete_produto_via_tabela' produto.pk %}"
+                                  action="{% url 'posvendasapp:delete_produto_via_tabela_geral' produto.pk %}"
                                   onsubmit="if(confirm('Deseja realmente excluir este produto?')) { this.querySelector('button').disabled = true; return true; } else { return false; }">
                                 {% csrf_token %}
                                 <button type="submit" class="delete-btn">Excluir</button>

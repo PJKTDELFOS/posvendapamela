@@ -70,7 +70,13 @@
                     <td>R$ {{ cliente.valor_total_venda_do_cliente|floatformat:2 }}</td>
                     <td class="action-buttons">
                         <a href="{% url 'posvendasapp:atualizar_cliente' cliente.pk %}" class="edit">Editar</a>
-                        <a href="{% url 'posvendasapp:deletar_cliente' cliente.pk %}" class="delete">Deletar</a>
+                        <form method="post"
+                                      class="form-excluir"
+                                      action="{% url 'posvendasapp:deletar_cliente' cliente.pk %}"
+                                      onsubmit="if(confirm('Deseja realmente excluir este produto?')) { this.querySelector('button').disabled = true; return true; } else { return false; }">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-excluir">Excluir</button>
+                                </form>
                     </td>
                 </tr>
             {% empty %}

@@ -39,8 +39,7 @@
         <table class="list-table">
             <thead>
             <tr>
-                <th>Venda-id</th>
-                <th>Sequencia</th>
+                <th>Sequencia Venda</th>
                 <th>Cliente</th>
                 <th>Data da Venda</th>
                 <th>Previsão (dias)</th>
@@ -53,8 +52,8 @@
             <tbody>
             {% for venda in vendas %}
                 <tr>
-                    <td data-label="id"><a href="{% url 'posvendasapp:ficha_venda' venda.pk %}">{{ venda.pk }}</a></td>
-                    <td data-label="Cliente">{{ venda.sequencia_venda }}</td>
+                    <td data-label="id"><a href="{% url 'posvendasapp:ficha_venda' venda.pk %}">{{ venda.sequencia_venda }}</a></td>
+
                     <td data-label="Cliente">{{ venda.cliente.Nome }}</td>
                     <td data-label="Data da Venda">{{ venda.Data_venda|date:"d/m/Y" }}</td>
                     <td data-label="Previsão (dias)">{{ venda.Previsao|default:"-" }}</td>
@@ -74,7 +73,7 @@
                             <a href="{% url 'posvendasapp:atualizar_venda' venda.pk %}" class="edit">Editar</a>
                             <form method="post"
                                   class="delete"
-                                  action="{% url 'posvendasapp:deletar_venda' venda.pk %}"
+                                  action="{% url 'posvendasapp:deletar_venda_via_tabela_geral' venda.pk %}"
                                   onsubmit="if(confirm('Deseja realmente excluir este produto?')) { this.querySelector('button').disabled = true; return true; } else { return false; }">
                                 {% csrf_token %}
                                 <button type="submit" class="delete-btn">Excluir</button>

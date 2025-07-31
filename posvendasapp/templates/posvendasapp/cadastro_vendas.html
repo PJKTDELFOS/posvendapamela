@@ -64,6 +64,16 @@
                                 {{ field|as_crispy_field }}
                             {% endfor %}
                             <button type="button" class="btn-remove-form">Remover form</button>
+                        {% if modo == 'edição' %}
+                                {% if form.instance.pk %}
+                                    <button type="button"
+                                            onclick="excluirOcorrencia(this)"
+                                            data-venda-id="{{ venda.pk }}"
+                                            data-ocorrencia-id="{{ form.instance.pk }}">
+                                        Excluir
+                                    </button>
+                                {% endif %}
+                            {% endif %}
                         </div>
                     {% endfor %}
                 </div>
@@ -218,6 +228,33 @@
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = `/tabela_venda/${vendaId}/editar/${produtoId}/deletar`;
+
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = csrfToken;
+
+                form.appendChild(csrfInput);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+        function excluirOcorrencia(button) {
+            if (confirm("Deseja realmente excluir ocorrencia?")) {
+                button.disabled = true;
+
+                const vendaId = button.getAttribute('data-venda-id');
+                const ocorrenciaId = button.getAttribute('data-ocorrencia-id');
+
+                if (!vendaId || !ocorrenciaId) {
+                    alert("Erro: venda ou ocorrenciasem ID.");
+                    return;
+                }
+
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/tabela_venda/${vendaId}/editar/${ocorrenciaId}/deletar_ocorrencia`;
 
                 const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
                 const csrfInput = document.createElement('input');

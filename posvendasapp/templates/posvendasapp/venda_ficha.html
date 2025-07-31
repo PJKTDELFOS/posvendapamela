@@ -51,7 +51,7 @@
             <form method="post"
                   class="form-excluir"
                   action="{% url 'posvendasapp:deletar_venda' venda.pk %}"
-                  onsubmit="if(confirm('Deseja realmente excluir este produto?')) { this.querySelector('button').disabled = true; return true; } else { return false; }">
+                  onsubmit="if(confirm('Deseja realmente excluir esta venda??')) { this.querySelector('button').disabled = true; return true; } else { return false; }">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-excluir">Excluir</button>
             </form>
@@ -149,8 +149,8 @@
                             <a href="#" class="edit">Editar</a>
                             <form method="post"
                                   class="delete"
-                                  action="{% url 'posvendasapp:delete_produto_via_tabela' produto.pk %}"
-                                  onsubmit="if(confirm('Deseja realmente excluir este produto?')) { this.querySelector('button').disabled = true; return true; } else { return false; }">
+                                  action="{% url 'posvendasapp:delete_produto_via_tabela_individual' produto.pk %}"
+                                  onsubmit="if(confirm('Deseja realmente excluir este produto desta venda??')) { this.querySelector('button').disabled = true; return true; } else { return false; }">
                                 {% csrf_token %}
                                 <button type="submit" class="delete-btn">Excluir</button>
                             </form>

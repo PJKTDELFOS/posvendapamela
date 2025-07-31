@@ -254,7 +254,7 @@ class DeleteCliente(LoginRequiredMixin,View):
         cliente = get_object_or_404(Clientes, pk=kwargs['pk'])
         try:
             cliente.delete()
-            messages.warning(request, 'Menbro da Equipe excluído com sucesso!')
+            messages.warning(request, 'Cliente excluído com sucesso!')
         except:
             messages.error(request, 'Erro ao excluir.')
 
@@ -320,7 +320,6 @@ class Listar_Clientes(LoginRequiredMixin,ListView):
             messages.info(self.request,f"🎉 Hoje temos "
                                        f"{aniversariantes.count()} cliente(s) fazendo aniversário!")
         return super().get(request,*args,**kwargs)
-
 class Cliente(LoginRequiredMixin,DetailView ):
     model = Clientes
     template_name = 'posvendasapp/cliente_ficha.html'
@@ -377,8 +376,6 @@ class Cliente(LoginRequiredMixin,DetailView ):
         context['page_obj'] = page_obj
         context['is_paginated'] = page_obj.has_other_pages()
         return context
-
-
 def delete_arquivos_cliente(request,pk):
     if request.method == 'POST':
         cliente=get_object_or_404(Clientes, pk=pk)
@@ -574,7 +571,7 @@ class Listar_Vendas(LoginRequiredMixin, ListView):
             context['is_paginated'] = page_obj.has_other_pages()
 
         return context
-class Delete_Venda(LoginRequiredMixin,View):
+class Delete_Venda_via_tabela_geral(LoginRequiredMixin,View):
     def post(self, request, *args, **kwargs):
         venda_deletada = get_object_or_404(Vendas, pk=kwargs['pk'])
 
@@ -585,6 +582,19 @@ class Delete_Venda(LoginRequiredMixin,View):
             messages.error(request, 'Erro ao excluir: venda está vinculado a outros registros.')
 
         return redirect('posvendasapp:tabela_venda')
+
+class Delete_Venda_via_tabela_ficha_cliente(LoginRequiredMixin,View):
+    def post(self, request, *args, **kwargs):
+        venda_deletada = get_object_or_404(Vendas, pk=kwargs['pk'])
+        cliente=venda_deletada.cliente
+
+        try:
+            venda_deletada.delete()
+            messages.warning(request, 'venda excluída com sucesso!')
+        except:
+            messages.error(request, 'Erro ao excluir: venda está vinculado a outros registros.')
+
+        return redirect('posvendasapp:cliente',pk=cliente.pk)
 class Venda_(LoginRequiredMixin,DetailView ):
     model = Vendas
     template_name = 'posvendasapp/venda_ficha.html'
@@ -650,8 +660,8 @@ class Deletar_Produto(LoginRequiredMixin,View):
         except :
             messages.error(request, 'Erro ao excluir: produto está vinculado a outros registros.')
 
-        return redirect('posvendasapp:tabela_produtos_vendidos')
-class Delete_produto_tabela(LoginRequiredMixin, View):
+        return redirect('posvendasapp:atualizar_venda',pk=venda_acessada.pk)
+class Delete_produto_tabela_geral(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         produto = get_object_or_404(Produtos, pk=kwargs['produto_pk'])
 
@@ -662,6 +672,18 @@ class Delete_produto_tabela(LoginRequiredMixin, View):
             messages.error(request, 'Erro ao excluir: produto está vinculado a outros registros.')
 
         return redirect('posvendasapp:tabela_produtos_vendidos')
+class Delete_produto_tabela_venda_individual(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        produto = get_object_or_404(Produtos, pk=kwargs['produto_pk'])
+        venda=produto.venda
+
+        try:
+            produto.delete()
+            messages.warning(request, 'Produto excluído da venda com sucesso!')
+        except :
+            messages.error(request, 'Erro ao excluir: produto .')
+
+        return redirect('posvendasapp:ficha_venda',pk=venda.pk)
 
 class DeleteOcorrencia(LoginRequiredMixin,DeleteView):
     def post(self, request, *args, **kwargs):
@@ -669,11 +691,11 @@ class DeleteOcorrencia(LoginRequiredMixin,DeleteView):
         ocorrencia_deletado = get_object_or_404(Ocorrencia, pk=kwargs['ocorrencia_pk'], venda=venda_acessada)
         try:
             ocorrencia_deletado.delete()
-            messages.warning(request, 'Produto excluído com sucesso!')
+            messages.warning(request, ' Ocorrencia excluida com sucesso!')
         except:
-            messages.error(request, 'Erro ao excluir: produto está vinculado a outros registros.')
+            messages.error(request, 'Erro ao excluir: Ocorrencia.')
 
-        return redirect('posvendasapp:tabela_produtos_vendidos')
+        return redirect('posvendasapp:atualizar_venda',pk=venda_acessada.pk)
 
 class Listar_Produtos_Vendidos(LoginRequiredMixin, ListView):
     model = Produtos
