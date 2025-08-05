@@ -50,7 +50,7 @@
             <!-- Botão Excluir -->
             <form method="post"
                   class="form-excluir"
-                  action="{% url 'posvendasapp:deletar_venda' venda.pk %}"
+                  action="{% url 'posvendasapp:deletar_venda_via_tabela_ficha_cliente' venda.pk %}"
                   onsubmit="if(confirm('Deseja realmente excluir esta venda??')) { this.querySelector('button').disabled = true; return true; } else { return false; }">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-excluir">Excluir</button>
