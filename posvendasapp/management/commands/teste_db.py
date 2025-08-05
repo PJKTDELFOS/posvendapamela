@@ -44,6 +44,35 @@ class Command(BaseCommand):
         reset_sequence_safe('posvendasapp_vendas')
         reset_sequence_safe('posvendasapp_produtos')
         reset_sequence_safe('posvendasapp_ocorrencia')
+        # reset_sequence_safe('posvendasapp_clientes')
+        # self.stdout.write('Criando CLIENTES...')
+        # NUM_CLIENTES=50
+        #
+        # for _ in  range(NUM_CLIENTES):
+        #     nome=fake.name()
+        #     ddd=fake.random_element(elements=(21,11,31,92))
+        #     if random.choice([True, False]):
+        #         numero=f'{ddd}9{random.randint(8000,9999)}{random.randint(8000,9999)}'
+        #     else:
+        #         numero = f'{ddd}9{random.randint(8000, 9999)}{random.randint(8000, 9999)}'
+        #
+        #
+        #     tel_contato = numero
+        #     email = fake.email()
+        #     cpf=fake.cpf()
+        #     aniversario=fake.date()
+        #
+        #     Clientes.objects.create(
+        #         Nome=nome,
+        #         tel_contato=tel_contato,
+        #         email=email,
+        #         cpf=cpf,
+        #         aniversario=aniversario,
+        #     )
+
+
+
+
 
         # Buscando todos os clientes e usuários cadastrados
         clientes = list(Clientes.objects.all())
@@ -60,11 +89,13 @@ class Command(BaseCommand):
             vendedor = random.choice(usuarios)
             data_venda = timezone.now().date() - timedelta(days=random.randint(1, 30))
             previsao = random.randint(5, 30)
+            sequencia_venda=random.randint(00000, 99999)
             venda = Vendas.objects.create(
                 cliente=cliente,
                 Data_venda=data_venda,
                 Previsao=previsao,
-                vendedor=vendedor
+                vendedor=vendedor,
+                sequencia_venda=sequencia_venda
             )
             vendas.append(venda)
 
