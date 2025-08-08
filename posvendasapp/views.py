@@ -11,7 +11,8 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy,reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-
+from django.core.paginator import Paginator
+from django.utils.functional import cached_property
 from utils.tools_utils import sanitize_name
 from .forms import *
 from.vendasforms import *
@@ -570,10 +571,15 @@ class Listar_Vendas(LoginRequiredMixin, ListView):
             paginator = Paginator(qs, self.paginate_by)
             page_number = self.request.GET.get('page') or 1
             page_obj = paginator.get_page(page_number)
-            context['vendas'] = page_obj
-            context['page_obj'] = page_obj
-            context['paginator'] = paginator
-            context['is_paginated'] = page_obj.has_other_pages()
+        else:
+            paginator = Paginator(qs, self.paginate_by)
+            page_number = self.request.GET.get('page') or 1
+            page_obj = paginator.get_page(page_number)
+
+        context['vendas'] = page_obj
+        context['page_obj'] = page_obj
+        context['paginator'] = paginator
+        context['is_paginated'] = page_obj.has_other_pages()
 
         return context
 class Delete_Venda_via_tabela_geral(LoginRequiredMixin,View):
