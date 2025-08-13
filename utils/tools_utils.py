@@ -6,7 +6,10 @@ import os
 from django.conf import settings
 import unidecode
 import pytz
-
+from django.contrib.auth.models import Group, Permission
+from django.contrib.contenttypes.models import ContentType
+from django.apps import apps
+from django.contrib.contenttypes.models import ContentType
 register=Library()
 @register.filter
 def formata_preco(val):
@@ -14,7 +17,17 @@ def formata_preco(val):
 
 
 
-import re
+def criar_grupos():
+    grupos = {
+        'vendedor': 1,
+        'gerencia': 2,
+        'supervisao': 3,
+        'direcao': 4,
+    }
+    for nome in grupos.keys():
+        grupo,criado=Group.objects.get_or_create(name=nome)
+        if criado:
+            print(f'Grupo "{nome}" criado com sucesso.')
 
 def valida_cpf(cpf):
     cpf = str(cpf)
@@ -54,7 +67,7 @@ def valida_cpf(cpf):
     else:
         return False
 
-import os
+
 
 def sanitize_name(value):
     """Remove caracteres especiais e substitui espaços por underscores."""
@@ -79,6 +92,16 @@ def contrato_upload_path(instance, filename):
     tipo_documento = sanitize_name(instance.tipo_documento)
 
     return os.path.join(f'processos/{processo_nome}/contratos/{contrato_nome}/{tipo_documento}', filename)
+
+def registrar_log(usuario,acao,objeto):
+    from posvendasapp.models import logAcao
+    logAcao.objects.create(
+        usuario=usuario,
+        acao=acao,
+        content_type=ContentType.objects.get_for_model(objeto),
+        object_id=objeto.pk
+    )
+
 
 def pedido_upload_path(instance, filename):
     processo_nome = (f'{instance.contrato.processo.pk or "novo"}')
@@ -225,12 +248,3 @@ class CalculadoraCustoTotal:
 
 
 
-# def docs_finan_load_path(instance, filename):
-#     funcionario_arquivos = (f'{instance.pk or "novo"}-{sanitize_name(instance.nome)}'
-#                      f'-{sanitize_name(instance.cpf)}')
-#     tipo_documento = sanitize_name(instance.tipo_documento)
-#
-#     return os.path.join(f'rh/{funcionario_arquivos}/{tipo_documento}', filename)
-
-
-#fazer upload paths especificos e trocar o nome da pasta

@@ -1,12 +1,19 @@
 from datetime import date
 
-from .models import Clientes, Vendas, Produtos,Equipe,Ocorrencia
+from .models import Clientes, Vendas, Produtos,Equipe,Ocorrencia,logAcao
 from django.forms.models import BaseInlineFormSet
 from django.contrib import admin, messages
 from django.contrib.auth.models import User
 from axes.models import AccessLog
 from django.db.models import F, ExpressionWrapper,DateField,DurationField
 from django.utils.timezone import timedelta
+from utils.tools_utils import *
+from posvendasapp.forms import EquipeForm,UsuarioForm
+
+from django.contrib import admin
+from django.contrib.auth.models import Group
+
+from django import forms
 
 # Função de ação para liberar bloqueio
 def liberar_bloqueio(modeladmin, request, queryset):
@@ -16,6 +23,19 @@ def liberar_bloqueio(modeladmin, request, queryset):
         total_deletados += deletados
     messages.success(request, f'Bloqueio liberado para {queryset.count()} usuário(s). Total de registros deletados: {total_deletados}.')
 liberar_bloqueio.short_description = "Liberar bloqueio de usuários selecionados"
+
+
+def user_group_level(user):
+   levels={
+       'vendedor':1,
+       'gerencia':2,
+       'supervisao':3,
+       'direcao':4,
+   }
+   for group_name,level in levels.items():
+       if user.groups.filter(name=group_name).exists():
+           return level
+   return 0
 
 # Admin customizado do User com a ação
 class UserAdmin(admin.ModelAdmin):
@@ -95,22 +115,50 @@ class OcorrenciaInline(admin.TabularInline):
 
 
 
+#para permissoes de grupo
+class CustomGroupAdmin(admin.ModelAdmin):
+    def has_add_permission(self, request):
+        return request.user.is_superuser
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_superuser
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+@admin.register(logAcao)
+class logAcaoAdmin(admin.ModelAdmin):#logs em banco de dados
+    list_display = ('data_hora','usuario','acao','objeto')
+    list_filter = ('usuario','acao','content_type','data_hora')
+    search_fields = ('usuario__username','acao')
+    readonly_fields = ('usuario', 'acao', 'content_type', 'object_id', 'objeto', 'data_hora')
+
+
 #admin equipe-vendedores e outros cargos
 @admin.register(Equipe)
 class EquipeAdmin(admin.ModelAdmin):
-    list_display = ('get_username','Cargo','get_is_active')
+    form = EquipeForm
+    list_display = ('get_username','Cargo','get_is_active','get_email')
     search_fields = ('get_username','Cargo')
     list_filter = ('Usuario__is_active',)
     actions = ['liberar_usuario']
+    readonly_fields = ('get_username','get_email')
 
     def get_username(self, obj):
         return obj.Usuario.username
     get_username.short_description = 'Usuário'
 
+    def get_email(self, obj):
+        return obj.Usuario.email
+    get_email.short_description = 'email'
+
     def get_is_active(self,obj):
         return obj.Usuario.is_active
     get_is_active.boolean = True
     get_is_active.short_description = 'Liberado'
+
+    def get_is_staff(self,obj):
+        return obj.Usuario.is_staff
+    get_is_staff.boolean = True
+    get_is_staff.short_description = 'Staff'
 
 
     def liberar_usuario(self,request,queryset):
@@ -120,10 +168,73 @@ class EquipeAdmin(admin.ModelAdmin):
                 equipe.Usuario.is_active=True
                 equipe.Usuario.save()
                 updated += 1
+                registrar_log(request.user,'liberou usuario',equipe)
         self.message_user(request,f'{updated} registro(s) liberado(s).')
     liberar_usuario.short_description = 'Liberar usuarios'
 
+    def has_view_permission(self, request, obj=None):
+        if obj:
+            has_permission=user_group_level(request.user)>=user_group_level(obj.Usuario)
+            if not has_permission:
+                registrar_log(request.user,'tentou visualizar membro da equipe',obj)
+                return False
+            return has_permission
+        return True
 
+    def has_change_permission(self, request, obj=None):
+        if obj:
+            has_permission = user_group_level(request.user) >= user_group_level(obj.Usuario)
+            if not has_permission:
+                registrar_log(request.user, 'tentou alterar membro da equipe', obj)
+                return False
+            return has_permission
+        return True
+
+    def has_delete_permission(self, request, obj=None):
+        if obj:
+            has_permission = user_group_level(request.user) >= user_group_level(obj.Usuario)
+            if not has_permission:
+                registrar_log(request.user, 'tentou deletar membro da equipe', obj)
+                return False
+            return has_permission
+        return True
+
+    def has_add_permission(self, request):
+        return user_group_level(request.user) > 0
+
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            user_form_data=request.POST
+            usuario_form=UsuarioForm(user_form_data)
+            if usuario_form.is_valid():
+                user=usuario_form.save(commit=False)
+                user.is_active=False
+                user.set_password(usuario_form.cleaned_data['password'])
+                user.save()
+                obj.Usuario=user
+                super().save_model(request, obj, form, change)
+                registrar_log(request.user,'criou usuario',obj)
+            else:
+                raise form.ValidationError(usuario_form.errors)
+        else:
+            super().save_model(request, obj, form, change)
+            registrar_log(request.user, 'Alterou usuario', obj)
+
+
+
+    def delete_model(self, request, obj):
+        registrar_log(request.user,'Deletou Membo',obj)
+        super().delete_model(request, obj)
+
+    def get_readonly_fields(self, request, obj=None):
+        read_only_fields=list(self.readonly_fields)
+        user_sensitive_fields=['get_email', 'get_is_staff', ]
+        if obj:  # Edição
+            read_only_fields += user_sensitive_fields
+        else:  # Criação
+            read_only_fields += ['get_is_stafff', ]
+        return read_only_fields
 
 
 # Admin de Clientes com Vendas Inline

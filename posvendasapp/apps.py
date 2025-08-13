@@ -7,3 +7,5 @@ class PosvendasappConfig(AppConfig):
 
     def ready(self):
         import posvendasapp.signals
+        from utils.tools_utils import criar_grupos
+        criar_grupos()

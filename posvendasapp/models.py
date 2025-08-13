@@ -5,6 +5,8 @@ from utils import tools_utils
 from datetime import timedelta,date
 import os
 from django.core.validators import RegexValidator
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.utils import timezone
 # Create your models here.
 
@@ -191,6 +193,23 @@ class Ocorrencia(models.Model):
 
 
 
+
+class logAcao(models.Model):
+    usuario=models.ForeignKey(User,on_delete=models.SET_NULL,verbose_name='Usuario',null=True,)
+    acao=models.CharField(default=None, max_length=255, blank=False, null=False, verbose_name='Acao')
+
+    content_type=models.ForeignKey(ContentType,on_delete=models.CASCADE)
+    object_id=models.PositiveIntegerField()
+    objeto=GenericForeignKey('content_type', 'object_id')
+    data_hora=models.DateTimeField(auto_now_add=True,verbose_name='Data e Hora')
+
+    class Meta:
+        verbose_name = 'Log Acao'
+        verbose_name_plural = 'Log de Acoes'
+        ordering=('-data_hora',)
+
+    def __str__(self):
+        return f"{self.data_hora} - {self.usuario} - {self.acao} - {self.objeto}"
 
 
 

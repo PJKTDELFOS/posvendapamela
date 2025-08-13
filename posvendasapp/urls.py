@@ -59,7 +59,7 @@ urlpatterns = [
     path('tabela_venda/<int:pk>/editar', views.Atualizar_Vendas.as_view(), name='atualizar_venda'),
     path('tabela_venda/<int:pk>/deletar_via_tabela_geral', views.Delete_Venda_via_tabela_geral.as_view(),
          name='deletar_venda_via_tabela_geral'),
-    path('/<int:pk>/deletar_venda_via_ficha_cliente', views.Delete_Venda_via_tabela_ficha_cliente.as_view(),
+    path('<int:pk>/deletar_venda_via_ficha_cliente', views.Delete_Venda_via_tabela_ficha_cliente.as_view(),
          name='deletar_venda_via_tabela_ficha_cliente'),
     # _____________________________________________________________________________________________________________#
     # produtos
@@ -70,7 +70,7 @@ urlpatterns = [
          name='deletar_ocorrencia_via_venda'),
     path('tabela_produtos_vendidos/<int:produto_pk>/delete',
          views.Delete_produto_tabela_geral.as_view(), name='delete_produto_via_tabela_geral'),
-    path('/<int:produto_pk>/delete',
+    path('<int:produto_pk>/delete',
          views.Delete_produto_tabela_venda_individual.as_view(), name='delete_produto_via_tabela_individual'),
 
     # _____________________________________________________________________________________________________________#

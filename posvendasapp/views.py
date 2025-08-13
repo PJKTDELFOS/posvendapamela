@@ -14,6 +14,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.utils.functional import cached_property
 from utils.tools_utils import sanitize_name
+from .admin import user_group_level
 from .forms import *
 from.vendasforms import *
 from posvendasapp.services.search_map import mapa_modelos
@@ -114,7 +115,7 @@ class CadastrarEquipe(View):
         form_usuario = UsuarioForm(request.POST,Usuario=None)
         form_equipe = EquipeForm(request.POST)
         try:
-            Main_services.criar_equipe(request.POST,request.POST)
+            Main_services.criar_equipe(request.POST,request.POST,request_user=request.user)
             return redirect('posvendasapp:tabela_equipe')
         except ValidationError as e:
             errors=e.message_dict
@@ -129,6 +130,9 @@ class Atualizar_membro_Equipe(LoginRequiredMixin,View):
     template_name = 'posvendasapp/cadastro_att_equipe.html'
     def get(self, request, pk):
         equipe=get_object_or_404(Equipe,pk=pk)
+        if user_group_level(request.user)<=user_group_level(equipe.Usuario):
+            messages.error(self.request,'Permissão nao autorizada')
+            return redirect('posvendasapp:tabela_equipe')
         usuario=equipe.Usuario
         form_usuario=UsuarioForm(instance=usuario,Usuario=usuario)
         form_equipe=EquipeForm(instance=equipe)
@@ -144,8 +148,12 @@ class Atualizar_membro_Equipe(LoginRequiredMixin,View):
         form_usuario = UsuarioForm(request.POST, instance=usuario, Usuario=usuario)
         form_equipe = EquipeForm(request.POST, instance=equipe)
 
+        if user_group_level(request.user) <= user_group_level(equipe.Usuario):
+            messages.error(request, 'Permissão não autorizada')
+            return redirect('posvendasapp:tabela_equipe')
+
         try:
-            Main_services.atualizar_equipe(form_usuario, form_equipe)
+            Main_services.atualizar_equipe(form_usuario, form_equipe,request_user=request.user)
             messages.success(self.request, 'Usuario atualizado com sucesso.')
 
             return redirect('posvendasapp:tabela_equipe')
@@ -162,6 +170,10 @@ class Atualizar_membro_Equipe(LoginRequiredMixin,View):
 class DeleteEquipe(LoginRequiredMixin,View):
     def post(self, request, *args, **kwargs):
         membro = get_object_or_404(Equipe, pk=kwargs['pk'])
+        if user_group_level(request.user)<=user_group_level(membro.Usuario):
+            messages.error(self.request,'Permissão nao autorizada')
+            return redirect('posvendasapp:tabela_equipe')
+
 
         try:
             membro.delete()
@@ -566,7 +578,7 @@ class Listar_Vendas(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         qs = self.get_queryset()
 
-        # Se for lista, paginar manualmente
+        # paginação manual
         if isinstance(qs, list):
             paginator = Paginator(qs, self.paginate_by)
             page_number = self.request.GET.get('page') or 1

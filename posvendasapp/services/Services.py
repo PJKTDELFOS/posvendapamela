@@ -3,12 +3,13 @@ from posvendasapp.vendasforms import *
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Q
+from utils.tools_utils import *
 
 
 class Main_services:
 
     @staticmethod
-    def criar_equipe(dados_usuario,dados_equipe):
+    def criar_equipe(dados_usuario,dados_equipe,request_user=None):
         form_usuario=UsuarioForm(dados_usuario,Usuario=None)
         form_equipe=EquipeForm(dados_equipe)
 
@@ -28,30 +29,32 @@ class Main_services:
         equipe.Usuario=user
 
         equipe.save()
+        if request_user:
+            registrar_log(request_user,'cadastrou membro',equipe)
         return equipe
 
 
     @staticmethod
-    def atualizar_equipe(form_usuario,form_equipe):
+    def atualizar_equipe(form_usuario,form_equipe,request_user=None):
 
         if not form_usuario.is_valid():
             raise ValidationError(form_usuario.errors)
-
         if not form_equipe.is_valid():
             raise ValidationError(form_equipe.errors)
 
-        user=form_usuario.save(commit=False)
-        nova_senha = form_usuario.cleaned_data['password']
+        user = form_usuario.save(commit=False)
+        nova_senha = form_usuario.cleaned_data.get('password')
         if nova_senha:
             user.set_password(nova_senha)
-
-        usuario=form_usuario.save(commit=False)
-        usuario.Usuario=user
-        usuario.save()
+        user.save()
 
         equipe = form_equipe.save(commit=False)
         equipe.Usuario = user
         equipe.save()
+
+        if request_user:
+            registrar_log(request_user, 'atualizou membro', equipe)
+
         return equipe
 
     @staticmethod

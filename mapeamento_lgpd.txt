@@ -1,0 +1,41 @@
+1-AÇOES
+1.1 MAPEAR MODELOS PARA NIVEL DE EXPOSIÇÃO A LGPD
+1.2 IMPLEMENTAR AÇOES CONFORME MAPEAMENTO
+1.3 TESTAR IMPLEMENTAÇÕES
+1.4 VALIDAR IMPLEMENTAÇÕES
+
+
+
+FASE DE IMPLEMENTAR AÇOES  PARA : EQUIPE
+
+IMPLEMENTDO:
+LOGS
+NIVEIS HIERARQUICOS
+CONTROLES DE ACESSO PELOS NIVEIS HIERARQUICOS
+
+
+
+FASE DE IMPLEMENTAR AÇOES  PARA : CLIENTE
+Campo	     Classificação LGPD	             Ações sugeridas implementáveis
+Nome	     Altamente necessário	         Armazenar de forma segura no banco. Restringir acesso no Django Admin ou nas views apenas para usuários autorizados (Equipe com nível hierárquico adequado).
+
+tel_contato	 Criticamente necessário	     Criptografar no banco (ex.: usando django-encrypted-model-fields). Mascarar no frontend (XX) XXXXX-1234. Validar formato no form com regex.
+
+email	     Criticamente necessário	     Criptografar no banco. Validar formato com EmailField. Mascarar parcialmente quando exibido em listas públicas.
+
+cpf	         Criticamente necessário	     Criptografar no banco. Mascarar no frontend XXX.XXX.XXX-12. Validar CPF com regex e checksum (validate_docbr ou função custom).
+
+aniversario	 Necessário	                     Armazenar com acesso restrito (somente usuários com permissão). Evitar exibição em listas ou relatórios públicos.
+
+Arquivos	 Altamente necessário	         Restringir permissões de leitura (FileField com upload_to seguro). Nomear arquivos de forma anônima/aleatória. Garantir que não contenham dados sensíveis no conteúdo.
+
+
+Observações extras:
+
+Logs: Para todos os acessos, alterações ou deleções de clientes, registrar logs com usuário e timestamp.(USAR O LOG GENERICO)
+
+Consentimento: Se os dados forem usados para marketing, registrar explicitamente consentimento e permitir revogação.(CRIAR UM CAMPO DE CONSENTIMENTO)
+
+Backup e segurança: Arquivos e dados sensíveis devem ter backup seguro e criptografia em repouso.
+
+Acesso via hierarquia: Apenas usuários com permissão (user_group_level) podem visualizar ou alterar campos sensíveis.(JA QUASE IMPLEMENTADO)
