@@ -79,6 +79,7 @@ def cliente_upload_path(instance, filename):
 
     return os.path.join(f'Clientes/{pasta_cliente_nome}/', filename)
 
+
 def processo_upload_path(instance, filename):
     processo_nome = (f'{instance.pk or "novo"}')
 
@@ -90,8 +91,8 @@ def contrato_upload_path(instance, filename):
     processo_nome = (f'{instance.processo.pk or "novo"}')
     contrato_nome = (f'{instance.pk or "novo"}')
     tipo_documento = sanitize_name(instance.tipo_documento)
-
     return os.path.join(f'processos/{processo_nome}/contratos/{contrato_nome}/{tipo_documento}', filename)
+
 
 def registrar_log(usuario,acao,objeto):
     from posvendasapp.models import logAcao

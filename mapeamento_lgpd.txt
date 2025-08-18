@@ -13,6 +13,8 @@ LOGS
 NIVEIS HIERARQUICOS
 CONTROLES DE ACESSO PELOS NIVEIS HIERARQUICOS
 
+corrigir quando nao tem ngm logado, ele nao permite o registro, ver se vale a pena fazer o registro sem user logado
+
 
 
 FASE DE IMPLEMENTAR AÇOES  PARA : CLIENTE
