@@ -49,7 +49,7 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 MIDDLEWARE = [
-     'django.middleware.security.SecurityMiddleware',
+    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'axes.middleware.AxesMiddleware',
@@ -134,9 +134,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 import sys
 import os
-
-
-
 
 LANGUAGE_CODE = 'pt-BR'
 
