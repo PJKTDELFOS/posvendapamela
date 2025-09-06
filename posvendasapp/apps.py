@@ -6,6 +6,13 @@ class PosvendasappConfig(AppConfig):
     name = 'posvendasapp'
 
     def ready(self):
-        import posvendasapp.signals
+        from django.db.utils import OperationalError, ProgrammingError
+        from django.contrib.auth.models import Group
         from utils.tools_utils import criar_grupos
-        criar_grupos()
+
+        try:
+            criar_grupos()
+        except (OperationalError, ProgrammingError):
+            # Ignora se o banco ainda não estiver pronto
+            pass
+

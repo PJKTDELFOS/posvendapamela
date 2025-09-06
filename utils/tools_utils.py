@@ -1,15 +1,19 @@
-import unicodedata
+# type: ignore
+
 from django.template import Library
 from openpyxl import load_workbook
-from django import template
+import re
 import os
 from django.conf import settings
 import unidecode
 import pytz
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
-from django.apps import apps
-from django.contrib.contenttypes.models import ContentType
+
+
+
+
+
 register=Library()
 @register.filter
 def formata_preco(val):
@@ -81,15 +85,13 @@ def cliente_upload_path(instance, filename):
 
 
 def processo_upload_path(instance, filename):
-    processo_nome = (f'{instance.pk or "novo"}')
-
+    processo_nome = instance.pk if instance.pk else "novo"
     tipo_documento = sanitize_name(instance.tipo_documento)
-
     return os.path.join(f'processos/{processo_nome}/{tipo_documento}', filename)
 
 def contrato_upload_path(instance, filename):
-    processo_nome = (f'{instance.processo.pk or "novo"}')
-    contrato_nome = (f'{instance.pk or "novo"}')
+    processo_nome = instance.processo.pk if instance.processo.pk else "novo"
+    contrato_nome = instance.pk if instance.pk else "novo"
     tipo_documento = sanitize_name(instance.tipo_documento)
     return os.path.join(f'processos/{processo_nome}/contratos/{contrato_nome}/{tipo_documento}', filename)
 
@@ -105,14 +107,10 @@ def registrar_log(usuario,acao,objeto):
 
 
 def pedido_upload_path(instance, filename):
-    processo_nome = (f'{instance.contrato.processo.pk or "novo"}')
-
-    contrato_nome = (f'{instance.contrato.pk or "novo"}')
-
-    pedido_nome = (f'{instance.pk or "novo"}')
-
+    processo_nome = instance.contrato.processo.pk if instance.contrato.processo.pk else "novo"
+    contrato_nome = instance.contrato.pk if instance.contrato.ok else "novo"
+    pedido_nome = instance.pk if instance.pk else "novo"
     tipo_documento = sanitize_name(instance.tipo_documento)
-
     return os.path.join(
        'processos',processo_nome,'contratos',
         contrato_nome,'pedidos',pedido_nome,tipo_documento,filename

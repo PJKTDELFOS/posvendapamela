@@ -85,6 +85,7 @@ AUTHENTICATION_BACKENDS = [
     'axes.backends.AxesBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
+CSRIF_TRUSTED_ORGINS = ['https://posvendas-rj.rj.r.appspot.com']
 
 WSGI_APPLICATION = 'posvendas.wsgi.application'
 
@@ -92,26 +93,24 @@ WSGI_APPLICATION = 'posvendas.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DB_HOST = config('DB_HOST')
-DB_PORT = config('DB_PORT', default='')
-
+# DB_HOST = config('DB_HOST')
+# DB_PORT = config('DB_PORT', default='')
+import os
 # Se estiver usando socket unix do Cloud SQL, DB_PORT deve ficar vazio
-if DB_HOST.startswith('/cloudsql/'):
-    DB_PORT = ''
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': config('DB_NAME'),
         'USER': config('DB_USER'),
         'PASSWORD': config('DB_PASSWORD'),
-        'HOST': DB_HOST,
-        'PORT': DB_PORT,
+        'HOST': config('DB_HOST'),
+        'PORT': config('DB_PORT'),
+        'OPTIONS': {
+            'client_encoding': 'UTF8',
+        },
+
     }
 }
-
-
-
 
 
 # Password validation

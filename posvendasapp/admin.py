@@ -60,11 +60,6 @@ class Aniversariantes(admin.SimpleListFilter):
                                    aniversario__month=hoje.month,)
         return queryset
 
-
-
-
-
-
 class OcorrenciaInlineFormSet(BaseInlineFormSet):
     def save_new(self, form, commit=True):
         obj=super().save_new(form, commit=False)
@@ -233,7 +228,7 @@ class EquipeAdmin(admin.ModelAdmin):
         if obj:  # Edição
             read_only_fields += user_sensitive_fields
         else:  # Criação
-            read_only_fields += ['get_is_stafff', ]
+            read_only_fields += ['get_is_staff', ]
         return read_only_fields
 
 

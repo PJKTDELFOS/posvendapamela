@@ -3,7 +3,7 @@ runtime: python312
 entrypoint: gunicorn -b :$PORT posvendas.wsgi
 
 beta_settings:
-  cloud_sql_instances: posvendasoticas:southamerica-east1:posvendasoticas-instance
+  cloud_sql_instances: posvendas-rj:southamerica-east1:yosefposvendas
 
 handlers:
   - url: /static
@@ -17,11 +17,12 @@ handlers:
 env_variables:
   DJANGO_SETTINGS_MODULE: "posvendas.settings"
   SECRET_KEY: "django-insecure-g(=+cz%1!b$vwi7m67(k_9@&wm22^+s%xj#*2oyuetvjt7!9wn"
-  DB_NAME: "pos_vendas_otica"
+  DB_NAME: "posvendasdb"
   DB_USER: "adminalbert"
-  DB_PASSWORD: "15Al1992A"
-  DB_HOST: "/cloudsql/posvendasoticas:southamerica-east1:posvendasoticas-instance"
-  ALLOWED_HOSTS: "posvendasoticas.rj.r.appspot.com,127.0.0.1,localhost"
+  DB_PASSWORD: "$Uc<0(JCBBLP2J^r"
+  DB_PORT: "5432"
+  DB_HOST: "/cloudsql/posvendas-rj:southamerica-east1:yosefposvendas"
+  ALLOWED_HOSTS: "posvendas-rj.rj.r.appspot.com,127.0.0.1,localhost"
 
 automatic_scaling:
   max_instances: 2
