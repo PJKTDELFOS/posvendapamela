@@ -1,16 +1,25 @@
+import base64
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import User
 from utils import tools_utils
 from datetime import timedelta,date
 import os
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator,validate_email
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
-from django.utils import timezone
+from cryptography.fernet import Fernet,InvalidToken
+from django.conf import settings
+import datetime
 # Create your models here.
 
-
+fernet_key = getattr(settings, 'FERNET_KEY', None)
+if fernet_key:
+    if isinstance(fernet_key, str):
+        fernet_key = fernet_key.encode()
+    fernet = Fernet(fernet_key)
+else:
+    fernet = None
 
 class Equipe(models.Model):
     Usuario = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True,
@@ -31,22 +40,160 @@ class Equipe(models.Model):
 
 
 class Clientes(models.Model):
-    Nome=models.CharField(default=None, max_length=254,blank=False,null=False,verbose_name='Nome')
-    tel_contato=models.CharField(default=None, max_length=255,
-                                 blank=False,null=False,verbose_name='telefone de contato',validators=[
-            RegexValidator(regex=r'^\d{10,11}$',
-                           message='digite somente numeros',
-                           code='Numero Invalido')#terminar a validação via regex
-        ]
-                                 )
-    email=models.CharField(default=None, max_length=255,blank=True,null=True,verbose_name='Email')
-    cpf = models.CharField(max_length=14,blank=False,null=False,verbose_name='CPF',unique=True, )
-    aniversario=models.DateField(default=None, blank=True, null=True, verbose_name='Data de Aniversario')
-    Arquivos=models.FileField(upload_to=tools_utils.cliente_upload_path,blank=True,null=True,verbose_name='Arquivos')
+    Nome = models.CharField(default=None, max_length=254, blank=False, null=False, verbose_name='Nome')
+    cpf_search=models.CharField(blank=True,null=True,default=None,max_length=20,verbose_name='CPF')
+    tel_contato_search=models.CharField(blank=True,null=True,default=None,max_length=20,verbose_name='Telefone')
+    email_search=models.EmailField(blank=True,null=True,default=None,max_length=254,verbose_name='Email')
+
+    # Apenas campos criptografados
+    tel_contato_encrypted = models.BinaryField(blank=True, null=True, verbose_name='Telefone')
+    email_encrypted = models.BinaryField(blank=True, null=True, verbose_name='E-mail')
+    cpf_encrypted = models.BinaryField(blank=True, null=True, verbose_name='CPF')
+    aniversario_encrypted = models.BinaryField(blank=True, null=True, verbose_name='Aniversário')
+
+    Arquivos = models.FileField(
+        upload_to=tools_utils.cliente_upload_path,
+        blank=True,
+        null=True,
+        verbose_name='Arquivos'
+    )
+
+    def _decrypt_field(self, encrypted_field):
+        """Método auxiliar para descriptografar campos com tratamento de erro"""
+        if not encrypted_field or not fernet:
+            return None
+
+        try:
+            # Se o campo é bytes, usar diretamente
+            if isinstance(encrypted_field, bytes):
+                return fernet.decrypt(encrypted_field).decode('utf-8')
+            # Se é memoryview (pode acontecer com BinaryField), converter
+            elif hasattr(encrypted_field, 'tobytes'):
+                return fernet.decrypt(encrypted_field.tobytes()).decode('utf-8')
+            # Se é string, converter para bytes
+            elif isinstance(encrypted_field, str):
+                return fernet.decrypt(encrypted_field.encode()).decode('utf-8')
+            else:
+                print(f"Tipo inesperado para descriptografia: {type(encrypted_field)}")
+                return None
+        except (InvalidToken, ValueError, TypeError, AttributeError) as e:
+            print(f"Erro na descriptografia: {e} - Tipo: {type(encrypted_field)}")
+            return None
+
+    def _encrypt_field(self, value):
+        """Método auxiliar para criptografar campos"""
+        if not value or not fernet:
+            return None
+
+        try:
+            return fernet.encrypt(str(value).encode('utf-8'))
+        except Exception as e:
+            print(f"Erro na criptografia: {e}")
+            return None
+
+    # Properties para CPF
+    @property
+    def cpf(self):
+        """Propriedade para obter CPF descriptografado"""
+        return self._decrypt_field(self.cpf_encrypted)
+
+    @cpf.setter
+    def cpf(self, value):
+        """Setter para CPF - valida e criptografa"""
+        if not value:
+            self.cpf_encrypted = None
+            return
+
+        if not tools_utils.valida_cpf(value):
+            raise ValidationError({'cpf': 'CPF inválido'})
+        self.cpf_encrypted = self._encrypt_field(value)
+
+    # Properties para Email
+    @property
+    def email(self):
+        """Propriedade para obter email descriptografado"""
+        return self._decrypt_field(self.email_encrypted)
+
+    @email.setter
+    def email(self, value):
+        """Setter para email - valida e criptografa"""
+        if not value:
+            self.email_encrypted = None
+            return
+
+        try:
+            validate_email(value)
+        except ValidationError:
+            raise ValidationError({'email': 'Email inválido'})
+        self.email_encrypted = self._encrypt_field(value)
+
+    # Properties para Telefone
+    @property
+    def tel_contato(self):
+        """Propriedade para obter telefone descriptografado"""
+        return self._decrypt_field(self.tel_contato_encrypted)
+
+    @tel_contato.setter
+    def tel_contato(self, value):
+        """Setter para telefone - valida e criptografa"""
+        if not value:
+            self.tel_contato_encrypted = None
+            return
+
+        validator = RegexValidator(
+            regex=r'^\d{10,11}$',
+            message='Digite somente números',
+            code='Número Inválido'
+        )
+        try:
+            validator(value)
+        except ValidationError:
+            raise ValidationError({'tel_contato': 'Telefone inválido'})
+        self.tel_contato_encrypted = self._encrypt_field(value)
+
+    # Properties para Aniversário
+    @property
+    def aniversario(self):
+        """Propriedade para obter aniversário descriptografado"""
+        decrypted = self._decrypt_field(self.aniversario_encrypted)
+        if decrypted:
+            try:
+                return datetime.date.fromisoformat(decrypted)
+            except ValueError:
+                print(f"Erro ao converter data: {decrypted}")
+        return None
+
+    @aniversario.setter
+    def aniversario(self, value):
+        """Setter para aniversário - valida e criptografa"""
+        if not value:
+            self.aniversario_encrypted = None
+            return
+
+        if not isinstance(value, datetime.date):
+            raise ValidationError({'aniversario': 'Aniversário deve ser uma data válida'})
+        self.aniversario_encrypted = self._encrypt_field(value.isoformat())
 
     def __str__(self):
         return self.Nome
 
+    class Meta:
+        verbose_name = 'Cliente'
+        verbose_name_plural = 'Clientes'
+
+    # Métodos para debug/admin
+    def debug_encrypted_data(self):
+        """Método para debugar dados criptografados"""
+        return {
+            'email_type': type(self.email_encrypted),
+            'cpf_type': type(self.cpf_encrypted),
+            'tel_type': type(self.tel_contato_encrypted),
+            'aniversario_type': type(self.aniversario_encrypted),
+            'email_encrypted': bool(self.email_encrypted),
+            'cpf_encrypted': bool(self.cpf_encrypted),
+            'tel_encrypted': bool(self.tel_contato_encrypted),
+            'aniversario_encrypted': bool(self.aniversario_encrypted),
+        }
     def nome_arquivo(self):
         if self.Arquivos:
             return os.path.basename(self.Arquivos.name)
@@ -60,8 +207,6 @@ class Clientes(models.Model):
         if error_messages:
             raise ValidationError(error_messages)
 
-
-
     @property
     def valor_total_venda_do_cliente(self):
         valor_total = sum(venda.valor_total_venda or 0 for venda in self.Vendas.all())
@@ -72,16 +217,29 @@ class Clientes(models.Model):
     valor_total_venda_do_cliente_formatada.short_description = 'valor total de vendas ao cliente '
 
     def save(self, *args, **kwargs):
+        super_save=super().save(*args, **kwargs)
         is_new=self.pk is None
         if is_new:
             temp_doc=self.Arquivos
             self.Arquivos=None
             super().save(*args, **kwargs)
             self.Arquivos = temp_doc
-        super().save(*args, **kwargs)
-    class Meta:
-        verbose_name = 'Cliente'
-        verbose_name_plural = 'Clientes'
+        if self.cpf:
+            self.cpf_search=''.join(filter(str.isdigit, self.cpf or ''))
+        else:
+            self.cpf_search=''
+        if self.email:
+            self.email_search=self.email.lower()
+        else:
+            self.email_search=''
+        if self.tel_contato:
+            self.tel_contato_search=''.join(filter(str.isdigit, self.tel_contato or ''))
+        else:
+            self.tel_contato_search=''
+        return super_save
+
+
+
 
 class Vendas(models.Model):
     cliente=models.ForeignKey(Clientes,on_delete=models.CASCADE,

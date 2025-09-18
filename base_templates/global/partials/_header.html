@@ -42,7 +42,7 @@
         <div style="display: flex; align-items: center; gap: 15px;">
             <div class="search-bar">
                 <form action="{% url 'posvendasapp:busca_dinamica' %}" method="get" style="display: flex; gap: 10px;">
-                    <input type="text" name="q" placeholder="Buscar em tudo..." required
+                    <input type="text" name="q" placeholder="pesquisar" required
                            style="padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
                     <button type="submit">🔍</button>
                 </form>
@@ -55,7 +55,7 @@
     <!-- Caso não autenticado -->
     <div class="navbar">
         <a class="navbar-title" href="{% url 'posvendasapp:menuinicial' %}" >YOSEF POSVENDAS</a>
-        <a href="{% url 'posvendasapp:cadastrar_equipe' %}" style="padding: 10px 20px; font-size: 16px;">REGISTRAR</a>
+
         <a href="{% url 'admin:index' %}" style="padding: 10px 20px; font-size: 16px;">ADMIN</a>
     </div>
 {% endif %}

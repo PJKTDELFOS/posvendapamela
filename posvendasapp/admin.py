@@ -1,19 +1,27 @@
 from datetime import date
-
 from .models import Clientes, Vendas, Produtos,Equipe,Ocorrencia,logAcao
 from django.forms.models import BaseInlineFormSet
-from django.contrib import admin, messages
+from django.contrib import  messages
 from django.contrib.auth.models import User
 from axes.models import AccessLog
-from django.db.models import F, ExpressionWrapper,DateField,DurationField
+from django.db.models import F, ExpressionWrapper,DateField
 from django.utils.timezone import timedelta
-from utils.tools_utils import *
+from django.shortcuts import get_object_or_404
 from posvendasapp.forms import EquipeForm,UsuarioForm
-
+from utils.tools_utils import *
 from django.contrib import admin
-from django.contrib.auth.models import Group
-
 from django import forms
+from cryptography.fernet import Fernet
+
+fernet_key = getattr(settings, 'FERNET_KEY', None)
+if fernet_key:
+    if isinstance(fernet_key, str):
+        fernet_key = fernet_key.encode()
+    fernet = Fernet(fernet_key)
+else:
+    fernet = None
+
+
 
 # Função de ação para liberar bloqueio
 def liberar_bloqueio(modeladmin, request, queryset):
@@ -25,17 +33,7 @@ def liberar_bloqueio(modeladmin, request, queryset):
 liberar_bloqueio.short_description = "Liberar bloqueio de usuários selecionados"
 
 
-def user_group_level(user):
-   levels={
-       'vendedor':1,
-       'gerencia':2,
-       'supervisao':3,
-       'direcao':4,
-   }
-   for group_name,level in levels.items():
-       if user.groups.filter(name=group_name).exists():
-           return level
-   return 0
+
 
 # Admin customizado do User com a ação
 class UserAdmin(admin.ModelAdmin):
@@ -132,7 +130,7 @@ class logAcaoAdmin(admin.ModelAdmin):#logs em banco de dados
 class EquipeAdmin(admin.ModelAdmin):
     form = EquipeForm
     list_display = ('get_username','Cargo','get_is_active','get_email')
-    search_fields = ('get_username','Cargo')
+    search_fields = ('Usuario__username','Cargo')
     list_filter = ('Usuario__is_active',)
     actions = ['liberar_usuario']
     readonly_fields = ('get_username','get_email')
@@ -232,15 +230,88 @@ class EquipeAdmin(admin.ModelAdmin):
         return read_only_fields
 
 
+
+class ClientesAdminform(forms.ModelForm):
+    cpf=forms.CharField(required=False)
+    email=forms.EmailField(required=False)
+    tel_contato=forms.CharField(required=False)
+    aniversario=forms.DateField(required=False,widget=forms.DateInput(format='%Y-%m-%d'))
+
+    class Meta:
+        model = Clientes
+        fields=['Nome','cpf','email','tel_contato','aniversario','Arquivos']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance:
+            self.fields['cpf'].initial = self.instance.cpf
+            self.fields['email'].initial = self.instance.email
+            self.fields['tel_contato'].initial = self.instance.tel_contato
+            self.fields['aniversario'].initial = self.instance.aniversario
+    def save(self, commit=True):
+        instance=super().save(commit=False)
+        instance.cpf=self.cleaned_data.get('cpf')
+        instance.email = self.cleaned_data.get('email')
+        instance.tel_contato = self.cleaned_data.get('tel_contato')
+        instance.aniversario = self.cleaned_data.get('aniversario')
+        if commit:
+            instance.save()
+        return instance
+
+
+
+
+
 # Admin de Clientes com Vendas Inline
 @admin.register(Clientes)
 class ClientesAdmin(admin.ModelAdmin):
-    list_display = ('id','Nome', 'tel_contato', 'valor_total_venda_do_cliente_formatada','cpf','aniversario')
-    search_fields = ('Nome', 'tel_contato','cpf','email')
+    form = ClientesAdminform
+    list_display = ('id','Nome', 'get_tel_contato', 'valor_total_venda_do_cliente_formatada','get_cpf','get_aniversario','get_email')
+    search_fields = ('Nome',)
     inlines = [VendasInline]
     readonly_fields = ('valor_total_venda_do_cliente_formatada',)
     list_filter = (Aniversariantes,)
 
+    def get_cpf(self,obj):
+        return obj.cpf
+    get_cpf.short_description = 'cpf'
+
+    def get_tel_contato(self,obj):
+        return obj.tel_contato
+    get_tel_contato.short_description = 'tel_contato'
+
+    def get_email(self,obj):
+        return obj.email
+    get_email.short_description = 'email'
+
+    def get_aniversario(self,obj):
+        return obj.aniversario
+    get_aniversario.short_description = 'aniversario'
+
+
+    def get_search_results(self, request, queryset, search_term):
+        def decrypt_field(value):
+            try:
+                if isinstance(value, memoryview):
+                    value = value.tobytes()
+                elif isinstance(value, str):
+                    value = value.encode()
+                return fernet.decrypt(value).decode()
+            except Exception:
+                return None
+        clientes=Clientes.objects.all()
+        if search_term:
+            matched_ids=[
+            item.id
+            for item in clientes
+            if search_term.lower() in (decrypt_field(item.cpf_encrypted)or '').lower()
+            or  search_term.lower() in (decrypt_field(item.email_encrypted)or '').lower()
+            or search_term.lower() in (decrypt_field(item.tel_contato_encrypted) or '').lower()
+            or search_term.lower()  in  (item.Nome or '').lower()
+            ]
+            queryset=Clientes.objects.filter(id__in=matched_ids)
+
+        return queryset, True
 
 
 

@@ -20,6 +20,18 @@ def formata_preco(val):
     return f'R$:{val:.4f}'.replace('.',',')
 
 
+def user_group_level(user):
+   levels={
+       'vendedor':1,
+       'gerencia':2,
+       'supervisao':3,
+       'direcao':4,
+   }
+   for group_name,level in levels.items():
+       if user.groups.filter(name=group_name).exists():
+           return level
+   return 0
+
 
 def criar_grupos():
     grupos = {

@@ -6,39 +6,19 @@ from django.contrib.auth.views import LoginView
 from django.views.generic.list import View,ListView
 from django.shortcuts import redirect,render
 from django.views.generic.edit import DeleteView
-import shutil
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy,reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
-from django.utils.functional import cached_property
-from utils.tools_utils import sanitize_name
-from .admin import user_group_level
 from .forms import *
 from.vendasforms import *
 from posvendasapp.services.search_map import mapa_modelos
-from datetime import date,timedelta,datetime
-from django.conf import settings
-
-import os
-
-from utils import tools_utils
+from datetime import date,timedelta
+from utils.tools_utils import *
 from django.core.paginator import Paginator
 from django.db.models import F, FloatField, ExpressionWrapper,Prefetch,DateField,Func,Case,When,Value,IntegerField
 
-from django.db.models.functions import Now
-
-
-
-
 # Create your views here.
-
-
-
-# Create your views here.
-
-
 #views de suporte_______________________________________________________________________________________________________
 class Login(LoginView):
     template_name = 'posvendasapp/tela_login.html'
@@ -323,16 +303,16 @@ class Listar_Clientes(LoginRequiredMixin,ListView):
 
         hoje = date.today()
         context['aniversariantes'] = Clientes.objects.filter(
-            aniversario__day=hoje.day,
-            aniversario__month=hoje.month
+            aniversario_encrypted__day=hoje.day,
+            aniversario_encrypted__month=hoje.month
         )
         context['today'] = date.today()
         return context
 
     def get(self,request,*args,**kwargs):
         hoje=date.today()
-        aniversariantes=Clientes.objects.filter(aniversario__day=hoje.day,
-                                                aniversario__month=hoje.month,
+        aniversariantes=Clientes.objects.filter(aniversario_encrypted__day=hoje.day,
+                                                aniversario_encrypted__month=hoje.month,
                                                 )
         if aniversariantes.exists():
             messages.info(self.request,f"🎉 Hoje temos "
@@ -397,7 +377,7 @@ class Cliente(LoginRequiredMixin,DetailView ):
 def delete_arquivos_cliente(request,pk):
     if request.method == 'POST':
         cliente=get_object_or_404(Clientes, pk=pk)
-        cliente_nome=f'{cliente.id}-{tools_utils.sanitize_name(cliente.Nome)}'
+        cliente_nome=f'{cliente.id}-{sanitize_name(cliente.Nome)}'
         caminho_base=os.path.join(settings.MEDIA_ROOT,'Clientes',cliente_nome)
         print(caminho_base,'caminho base')
         arquivo_excluir=request.POST.get('arquivo')
