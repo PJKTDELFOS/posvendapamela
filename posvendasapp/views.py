@@ -17,6 +17,18 @@ from datetime import date,timedelta
 from utils.tools_utils import *
 from django.core.paginator import Paginator
 from django.db.models import F, FloatField, ExpressionWrapper,Prefetch,DateField,Func,Case,When,Value,IntegerField
+from cryptography.fernet import Fernet
+import hashlib
+fernet_key = getattr(settings, 'FERNET_KEY', None)
+if fernet_key:
+    if isinstance(fernet_key, str):
+        fernet_key = fernet_key.encode()
+    fernet = Fernet(fernet_key)
+else:
+    fernet = None
+
+
+
 
 # Create your views here.
 #views de suporte_______________________________________________________________________________________________________
@@ -65,16 +77,21 @@ class Busca(LoginRequiredMixin,View):
             'resultados': resultados,
         })
 @login_required
-def busca_cpf(request):#função para busca de cpf antes de cadastrar cliente
-    cpf_buscado=request.GET.get('q','').strip()
+def busca_cpf(request):
+    cpf_buscado = request.GET.get('q', '').strip()
+    cpf_numeros = ''.join(filter(str.isdigit, cpf_buscado))
+    print("cpf buscado:", cpf_numeros)
 
-    try:
-        clientes_cpf = Clientes.objects.get(cpf=cpf_buscado)
-        return redirect('posvendasapp:atualizar_cliente',pk=clientes_cpf.pk)
+    cpf_hash = hashlib.sha256(cpf_numeros.encode()).hexdigest()
+    cliente = Clientes.objects.filter(cpf_hash=cpf_hash).first()
 
-    except Clientes.DoesNotExist:
-        url=reverse('posvendasapp:cadastrar_cliente')
-        return redirect(f'{url}?cpf={cpf_buscado}')
+    if cliente:
+        print("Cliente encontrado:", cliente)
+        return redirect('posvendasapp:atualizar_cliente', pk=cliente.pk)
+    else:
+        print("Cliente não localizado")
+        url = reverse('posvendasapp:cadastrar_cliente')
+        return redirect(f"{url}?cpf={cpf_buscado}")
 @login_required
 def pagina_busca_cpf(request):
     return render(request,'posvendasapp/busca_cpf_cliente.html')

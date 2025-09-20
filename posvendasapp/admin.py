@@ -1,3 +1,4 @@
+import hashlib
 from datetime import date
 from .models import Clientes, Vendas, Produtos,Equipe,Ocorrencia,logAcao
 from django.forms.models import BaseInlineFormSet
@@ -12,6 +13,7 @@ from utils.tools_utils import *
 from django.contrib import admin
 from django import forms
 from cryptography.fernet import Fernet
+from django.db.models import Q
 
 fernet_key = getattr(settings, 'FERNET_KEY', None)
 if fernet_key:
@@ -267,7 +269,7 @@ class ClientesAdminform(forms.ModelForm):
 class ClientesAdmin(admin.ModelAdmin):
     form = ClientesAdminform
     list_display = ('id','Nome', 'get_tel_contato', 'valor_total_venda_do_cliente_formatada','get_cpf','get_aniversario','get_email')
-    search_fields = ('Nome',)
+    search_fields = ['Nome']
     inlines = [VendasInline]
     readonly_fields = ('valor_total_venda_do_cliente_formatada',)
     list_filter = (Aniversariantes,)
@@ -290,28 +292,18 @@ class ClientesAdmin(admin.ModelAdmin):
 
 
     def get_search_results(self, request, queryset, search_term):
-        def decrypt_field(value):
-            try:
-                if isinstance(value, memoryview):
-                    value = value.tobytes()
-                elif isinstance(value, str):
-                    value = value.encode()
-                return fernet.decrypt(value).decode()
-            except Exception:
-                return None
-        clientes=Clientes.objects.all()
+        apenas_digitos=''.join(filter(str.isdigit, search_term))
         if search_term:
-            matched_ids=[
-            item.id
-            for item in clientes
-            if search_term.lower() in (decrypt_field(item.cpf_encrypted)or '').lower()
-            or  search_term.lower() in (decrypt_field(item.email_encrypted)or '').lower()
-            or search_term.lower() in (decrypt_field(item.tel_contato_encrypted) or '').lower()
-            or search_term.lower()  in  (item.Nome or '').lower()
-            ]
-            queryset=Clientes.objects.filter(id__in=matched_ids)
-
-        return queryset, True
+            cpf_hash=hashlib.sha256(apenas_digitos.encode()).hexdigest()
+            email_hash=hashlib.sha256(search_term.encode()).hexdigest()
+            tel_contato_hash=hashlib.sha256(apenas_digitos.encode()).hexdigest()
+            queryset=queryset.filter(
+                Q(cpf_hash=cpf_hash)|
+                Q(Nome__icontains=search_term)|
+                Q(email_hash=email_hash)|
+                Q(tel_contato_hash=tel_contato_hash)
+                                     )
+        return queryset, False
 
 
 

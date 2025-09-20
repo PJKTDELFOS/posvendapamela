@@ -11,6 +11,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from cryptography.fernet import Fernet,InvalidToken
 from django.conf import settings
 import datetime
+import hashlib
 # Create your models here.
 
 fernet_key = getattr(settings, 'FERNET_KEY', None)
@@ -41,9 +42,18 @@ class Equipe(models.Model):
 
 class Clientes(models.Model):
     Nome = models.CharField(default=None, max_length=254, blank=False, null=False, verbose_name='Nome')
-    cpf_search=models.CharField(blank=True,null=True,default=None,max_length=20,verbose_name='CPF')
-    tel_contato_search=models.CharField(blank=True,null=True,default=None,max_length=20,verbose_name='Telefone')
-    email_search=models.EmailField(blank=True,null=True,default=None,max_length=254,verbose_name='Email')
+    cpf_hash=models.CharField(blank=True,null=True,default=None,max_length=64,editable=False,verbose_name='CPF')
+    tel_contato_hash=models.CharField(blank=True,null=True,default=None,max_length=254,verbose_name='Telefone',editable=False)
+    email_hash=models.EmailField(blank=True,null=True,default=None,max_length=254,verbose_name='Email',editable=False)
+    aniversario_hash = models.CharField(
+        max_length=64,
+        blank=True,
+        null=True,
+        default=None,
+        editable=False,
+        verbose_name='Aniversário (hash)'
+    )
+
 
     # Apenas campos criptografados
     tel_contato_encrypted = models.BinaryField(blank=True, null=True, verbose_name='Telefone')
@@ -102,11 +112,14 @@ class Clientes(models.Model):
         """Setter para CPF - valida e criptografa"""
         if not value:
             self.cpf_encrypted = None
+            self.cpf_hash = None
             return
 
         if not tools_utils.valida_cpf(value):
             raise ValidationError({'cpf': 'CPF inválido'})
         self.cpf_encrypted = self._encrypt_field(value)
+        numeros=''.join(filter(str.isdigit, value))
+        self.cpf_hash=hashlib.sha256(numeros.encode('utf-8')).hexdigest()
 
     # Properties para Email
     @property
@@ -126,6 +139,8 @@ class Clientes(models.Model):
         except ValidationError:
             raise ValidationError({'email': 'Email inválido'})
         self.email_encrypted = self._encrypt_field(value)
+        letras = ''.join(filter(str, value))
+        self.email_hash=hashlib.sha256(letras.encode('utf-8')).hexdigest()
 
     # Properties para Telefone
     @property
@@ -138,6 +153,7 @@ class Clientes(models.Model):
         """Setter para telefone - valida e criptografa"""
         if not value:
             self.tel_contato_encrypted = None
+            self.tel_contato_hash = None
             return
 
         validator = RegexValidator(
@@ -150,6 +166,8 @@ class Clientes(models.Model):
         except ValidationError:
             raise ValidationError({'tel_contato': 'Telefone inválido'})
         self.tel_contato_encrypted = self._encrypt_field(value)
+        numerostelcontato = ''.join(filter(str.isdigit, value))
+        self.tel_contato_hash = hashlib.sha256(numerostelcontato.encode('utf-8')).hexdigest()
 
     # Properties para Aniversário
     @property
@@ -168,11 +186,14 @@ class Clientes(models.Model):
         """Setter para aniversário - valida e criptografa"""
         if not value:
             self.aniversario_encrypted = None
+            self.aniversario_hash=None
             return
 
         if not isinstance(value, datetime.date):
             raise ValidationError({'aniversario': 'Aniversário deve ser uma data válida'})
         self.aniversario_encrypted = self._encrypt_field(value.isoformat())
+        data_str = value.isoformat()
+        self.aniversario_hash=hashlib.sha256(data_str.encode('utf-8')).hexdigest()
 
     def __str__(self):
         return self.Nome
@@ -225,17 +246,25 @@ class Clientes(models.Model):
             super().save(*args, **kwargs)
             self.Arquivos = temp_doc
         if self.cpf:
-            self.cpf_search=''.join(filter(str.isdigit, self.cpf or ''))
+            numeros=''.join(filter(str.isdigit, self.cpf ))
+            self.cpf_hash=hashlib.sha256(numeros.encode()).hexdigest()
         else:
-            self.cpf_search=''
+            self.cpf_hash=''
         if self.email:
-            self.email_search=self.email.lower()
+            letras = ''.join(filter(str, self.email))
+            self.email_hash=hashlib.sha256(letras.encode()).hexdigest()
         else:
-            self.email_search=''
+            self.email_hash=''
         if self.tel_contato:
-            self.tel_contato_search=''.join(filter(str.isdigit, self.tel_contato or ''))
+            numerosLtelcontato = ''.join(filter(str.isdigit, self.cpf))
+            self.tel_contato_hash=hashlib.sha256(numerosLtelcontato.encode()).hexdigest()
         else:
-            self.tel_contato_search=''
+            self.tel_contato_hash=''
+        if self.aniversario:
+            data_str = self.aniversario.isoformat()
+            self.aniversario_hash = hashlib.sha256(data_str.encode('utf-8')).hexdigest()
+        else:
+            self.aniversario_hash = ''
         return super_save
 
 
