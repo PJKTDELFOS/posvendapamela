@@ -269,7 +269,7 @@ class ClientesAdminform(forms.ModelForm):
 class ClientesAdmin(admin.ModelAdmin):
     form = ClientesAdminform
     list_display = ('id','Nome', 'get_tel_contato', 'valor_total_venda_do_cliente_formatada','get_cpf','get_aniversario','get_email')
-    search_fields = ['Nome']
+    search_fields = []
     inlines = [VendasInline]
     readonly_fields = ('valor_total_venda_do_cliente_formatada',)
     list_filter = (Aniversariantes,)
@@ -304,9 +304,6 @@ class ClientesAdmin(admin.ModelAdmin):
                 Q(tel_contato_hash=tel_contato_hash)
                                      )
         return queryset, False
-
-
-
 
 # Admin de Vendas com Produtos Inline
 @admin.register(Vendas)

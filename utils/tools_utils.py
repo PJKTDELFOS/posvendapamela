@@ -120,7 +120,7 @@ def registrar_log(usuario,acao,objeto):
 
 def pedido_upload_path(instance, filename):
     processo_nome = instance.contrato.processo.pk if instance.contrato.processo.pk else "novo"
-    contrato_nome = instance.contrato.pk if instance.contrato.ok else "novo"
+    contrato_nome = instance.contrato.pk if instance.contrato.pk else "novo"
     pedido_nome = instance.pk if instance.pk else "novo"
     tipo_documento = sanitize_name(instance.tipo_documento)
     return os.path.join(
