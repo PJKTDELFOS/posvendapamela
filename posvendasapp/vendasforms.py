@@ -1,15 +1,33 @@
 from django import forms
+from django.core.exceptions import ValidationError
+
 from .models import Vendas,Clientes,Produtos,Ocorrencia
 from django.forms import inlineformset_factory,BaseInlineFormSet,modelformset_factory
+from utils.tools_utils import valida_cpf
 
 
 
 
 
 class Clienteforms(forms.ModelForm):
+    cpf=forms.CharField(max_length=11,required=True,label='CPF')
+    aniversario=forms.DateField(
+        required=False,
+        input_formats=['%d/%m/%Y','%Y-%m-%d'],
+        widget=forms.DateInput(attrs={'type': 'date','class': 'form-control'}),
+    )
+    tel_contato=forms.CharField( max_length=11,required=False,label='Telefone')
+    email=forms.EmailField(required=False,label='Email',max_length=254)
     class Meta:
         model = Clientes
-        fields = '__all__'
+        fields = (
+            'Nome',
+            'cpf',
+            'tel_contato',
+            'email',
+            'aniversario',
+            'Arquivos'
+        )
         labels={
             'Nome':'Cliente',
             'tel_contato':'Contato do cliente',
@@ -20,11 +38,57 @@ class Clienteforms(forms.ModelForm):
         widgets={
             'Nome':forms.TextInput(attrs={'class':'form-control'}),
             'tel_contato':forms.TextInput(attrs={'class':'form-control'}),
-            'Arquivos':forms.FileInput(attrs={'class':'form-control'}),
-            'aniversario':forms.DateInput(format='%Y-%m-%d',attrs={'type':'date'}),
+            'Arquivos':forms.ClearableFileInput(attrs={'class':'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'cpf': forms.TextInput(attrs={'class': 'form-control'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.fields['cpf'].initial = self.instance.cpf
+            self.fields['tel_contato'].initial = self.instance.tel_contato
+            self.fields['email'].initial = self.instance.email
+
+
+
+            aniversario_data=self.instance.aniversario
+            if aniversario_data:
+                self.fields['aniversario'].initial=aniversario_data.isoformat()
+            else:
+                self.fields['aniversario'].initial=None
+
+
+    def clean_cpf(self):
+        cpf=self.cleaned_data.get('cpf')
+        if not cpf:
+            return cpf
+        if not valida_cpf(cpf):
+            raise forms.ValidationError('Digite um cpf valido')
+        return cpf
+    def save(self, commit=True):
+        try:
+            instance=super().save(commit=False)
+            instance.cpf=self.cleaned_data.get('cpf')
+            instance.tel_contato=self.cleaned_data.get('tel_contato')
+            instance.email=self.cleaned_data.get('email')
+            instance.aniversario=self.cleaned_data.get('aniversario')
+        except Exception as e:
+            print(f"erro de atribuição /criptografia:{e}")
+            raise e
+        if commit:
+            try:
+                instance.save()
+                print('cliente salvo')
+            except Exception as e:
+                print(f"ERRO DE SALVAMENTO NO BANCO DE DADOS: {e}")
+                raise e
+        else:
+            print('INFO: Objeto preparado (commit=False). Salvamento final adiado.')
+
+        print(instance.pk,instance.arquivos)
+        return instance
+
 
 
 class Vendaforms(forms.ModelForm):

@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Q
 from utils.tools_utils import *
+import hashlib
 
 
 class Main_services:
@@ -61,16 +62,14 @@ class Main_services:
     def cadastrar_cliente(form):
         if not form.is_valid():
             raise ValidationError(form.errors)
-        cliente=form.save(commit=False)
-        cliente.save()
+        cliente=form.save()
         return cliente
 
     @staticmethod
     def atualizar_clientes(form):
         if not form.is_valid():
             raise ValidationError(form.errors)
-        cliente=form.save(commit=False)
-        cliente.save()
+        cliente=form.save()
         return cliente
 
     @staticmethod
@@ -86,7 +85,7 @@ class Main_services:
 
         produto_formset = ProdutoFormSet(data=dados_produto, instance=venda, prefix='produtos')
         ocorrencia_formset = OcorrenciaFormSet(data=dados_ocorrencia, instance=venda, prefix='ocorrencias')
-        ocorrencia_formset.request = request  # ✅ Corrigido aqui
+        ocorrencia_formset.request = request
 
         if not produto_formset.is_valid():
             print("Erros no formset de produtos:", produto_formset.errors)
@@ -131,16 +130,40 @@ class Main_services:
 
     @staticmethod
     def busca_centralizada(queryset, termo, campos):
-        from django.db.models import Q
-
+        if not termo:
+            return queryset.none()
+        termo_limpo_num = ''.join(filter(str.isdigit, termo))
+        hash_num = hashlib.sha256(termo_limpo_num.encode('utf-8')).hexdigest()
+        hash_email = hashlib.sha256(termo.lower().encode('utf-8')).hexdigest()
+        q_hash_match=Q()
+        if 'cpf_hash' in campos:
+            q_hash_match |= Q(cpf_hash__iexact=hash_num)
+        if 'tel_contato_hash' in campos:
+            q_hash_match |= Q(tel_contato_hash__iexact=hash_num)
+        if 'email_hash' in campos:
+            q_hash_match |= Q(email_hash__iexact=hash_email)
+        q_text_match=Q()
         palavras = termo.split()
-        q = Q()
         for palavra in palavras:
-            q_palavra = Q()
+            q_or_palavra=Q()
             for campo in campos:
-                q_palavra |= Q(**{f"{campo}__icontains": palavra})
-            q &= q_palavra  # usa AND entre palavras, para pegar todas
-        return queryset.filter(q).distinct()
+                if campo not in['cpf_hash','tel_contato_hash','email_hash']:
+                    q_or_palavra |= Q(
+                        **{f'{campo}__icontains':palavra}
+                    )
+
+            if q_text_match:
+                q_text_match &= q_or_palavra
+            else:
+                q_text_match = q_or_palavra
+        q_final = q_hash_match | q_text_match
+        return queryset.filter(q_final).distinct()
+
+
+
+
+
+
 
 
 

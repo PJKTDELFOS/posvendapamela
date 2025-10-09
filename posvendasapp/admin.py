@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from axes.models import AccessLog
 from django.db.models import F, ExpressionWrapper,DateField
 from django.utils.timezone import timedelta
-from django.shortcuts import get_object_or_404
+from .vendasforms import Clienteforms
 from posvendasapp.forms import EquipeForm,UsuarioForm
 from utils.tools_utils import *
 from django.contrib import admin
@@ -232,42 +232,10 @@ class EquipeAdmin(admin.ModelAdmin):
         return read_only_fields
 
 
-
-class ClientesAdminform(forms.ModelForm):
-    cpf=forms.CharField(required=False)
-    email=forms.EmailField(required=False)
-    tel_contato=forms.CharField(required=False)
-    aniversario=forms.DateField(required=False,widget=forms.DateInput(format='%Y-%m-%d'))
-
-    class Meta:
-        model = Clientes
-        fields=['Nome','cpf','email','tel_contato','aniversario','Arquivos']
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.instance:
-            self.fields['cpf'].initial = self.instance.cpf
-            self.fields['email'].initial = self.instance.email
-            self.fields['tel_contato'].initial = self.instance.tel_contato
-            self.fields['aniversario'].initial = self.instance.aniversario
-    def save(self, commit=True):
-        instance=super().save(commit=False)
-        instance.cpf=self.cleaned_data.get('cpf')
-        instance.email = self.cleaned_data.get('email')
-        instance.tel_contato = self.cleaned_data.get('tel_contato')
-        instance.aniversario = self.cleaned_data.get('aniversario')
-        if commit:
-            instance.save()
-        return instance
-
-
-
-
-
 # Admin de Clientes com Vendas Inline
 @admin.register(Clientes)
 class ClientesAdmin(admin.ModelAdmin):
-    form = ClientesAdminform
+    form = Clienteforms
     list_display = ('id','Nome', 'get_tel_contato', 'valor_total_venda_do_cliente_formatada','get_cpf','get_aniversario','get_email')
     search_fields = []
     inlines = [VendasInline]

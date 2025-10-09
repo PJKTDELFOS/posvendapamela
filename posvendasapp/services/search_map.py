@@ -5,7 +5,7 @@ from posvendasapp.models import *
 mapa_modelos = {
     'cliente': {
         'queryset': Clientes.objects.all(),
-        'campos': ['Nome', 'tel_contato','cpf','email']
+        'campos': ['Nome', 'tel_contato_hash','cpf_hash','email_hash']
         # 'Arquivos' removido porque FileField não é pesquisável por texto
     },
     'produto': {

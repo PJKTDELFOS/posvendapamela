@@ -202,6 +202,13 @@ class Clientes(models.Model):
         verbose_name = 'Cliente'
         verbose_name_plural = 'Clientes'
 
+        constraints=[
+            models.UniqueConstraint(
+                fields=['cpf_hash'],
+                name='unique_cpf_hash_constraint'
+            )
+        ]
+
     # Métodos para debug/admin
     def debug_encrypted_data(self):
         """Método para debugar dados criptografados"""
@@ -220,13 +227,7 @@ class Clientes(models.Model):
             return os.path.basename(self.Arquivos.name)
         return
 
-    def clean(self):
-        error_messages={}
-        cpf_valido=tools_utils.valida_cpf(self.cpf)
-        if not cpf_valido:
-            error_messages['cpf']='digite um cpf valido'
-        if error_messages:
-            raise ValidationError(error_messages)
+
 
     @property
     def valor_total_venda_do_cliente(self):
@@ -245,26 +246,26 @@ class Clientes(models.Model):
             self.Arquivos=None
             super().save(*args, **kwargs)
             self.Arquivos = temp_doc
-        if self.cpf:
-            numeros=''.join(filter(str.isdigit, self.cpf ))
-            self.cpf_hash=hashlib.sha256(numeros.encode()).hexdigest()
-        else:
-            self.cpf_hash=''
-        if self.email:
-            letras = ''.join(filter(str, self.email))
-            self.email_hash=hashlib.sha256(letras.encode()).hexdigest()
-        else:
-            self.email_hash=''
-        if self.tel_contato:
-            numerosLtelcontato = ''.join(filter(str.isdigit, self.cpf))
-            self.tel_contato_hash=hashlib.sha256(numerosLtelcontato.encode()).hexdigest()
-        else:
-            self.tel_contato_hash=''
-        if self.aniversario:
-            data_str = self.aniversario.isoformat()
-            self.aniversario_hash = hashlib.sha256(data_str.encode('utf-8')).hexdigest()
-        else:
-            self.aniversario_hash = ''
+        # if self.cpf:
+        #     numeros=''.join(filter(str.isdigit, self.cpf ))
+        #     self.cpf_hash=hashlib.sha256(numeros.encode()).hexdigest()
+        # else:
+        #     self.cpf_hash=''
+        # if self.email:
+        #     letras = ''.join(filter(str, self.email))
+        #     self.email_hash=hashlib.sha256(letras.encode()).hexdigest()
+        # else:
+        #     self.email_hash=''
+        # if self.tel_contato:
+        #     numerosLtelcontato = ''.join(filter(str.isdigit, self.cpf))
+        #     self.tel_contato_hash=hashlib.sha256(numerosLtelcontato.encode()).hexdigest()
+        # else:
+        #     self.tel_contato_hash=''
+        # if self.aniversario:
+        #     data_str = self.aniversario.isoformat()
+        #     self.aniversario_hash = hashlib.sha256(data_str.encode('utf-8')).hexdigest()
+        # else:
+        #     self.aniversario_hash = ''
         return super_save
 
 

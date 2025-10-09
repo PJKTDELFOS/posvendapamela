@@ -59,7 +59,6 @@ class Busca(LoginRequiredMixin,View):
     def get(self, request):
         termo=request.GET.get('q','').strip()
         resultados={}
-
         if termo:
             for modelo_nome,info in mapa_modelos.items():
                 queryset=info['queryset']
@@ -68,8 +67,6 @@ class Busca(LoginRequiredMixin,View):
 
                 if qs_resultados.exists():
                     resultados[modelo_nome]=qs_resultados
-
-
 
 
         return render(request, f'posvendasapp/busca_dinamica.html', {
@@ -227,7 +224,7 @@ class Cadastrar_Cliente(LoginRequiredMixin,View):
         form_cliente=Clienteforms(request.POST,request.FILES)
         try:
             Main_services.cadastrar_cliente(form_cliente)
-            return redirect('posvendasapp:tabela_cliente')
+            return redirect('posvendasapp:menuinicial')#trocar depois para tabela cliente, mudança apenas para teste
         except ValidationError :
             print(form_cliente.errors)
             return render(request, self.template_name, {
@@ -250,7 +247,7 @@ class Atualizar_Cliente(LoginRequiredMixin,View):
         form_cliente = Clienteforms( request.POST, request.FILES,instance=cliente)
         try:
             Main_services.atualizar_clientes(form_cliente)
-            return redirect('posvendasapp:tabela_cliente')
+            return redirect('posvendasapp:menuinicial')
         except ValidationError :
             print(form_cliente.errors)
             return render(request, self.template_name, {
@@ -275,66 +272,66 @@ class Listar_Clientes(LoginRequiredMixin,ListView):
     context_object_name = 'cliente'
     paginate_by = 10
 
-    def get_queryset(self):
-        sort_param = self.request.GET.get('sort', '')
-        filtro_param=self.request.GET.get('filtro', '')
-        hoje=date.today()
-
-        queryset = Clientes.objects.annotate(
-            eh_aniversariante=Case(
-                When(aniversario__day=hoje.day, aniversario__month=hoje.month, then=Value(0)),  # menor = vai pro topo
-                default=Value(1),
-                output_field=IntegerField()
-            )
-        ).order_by('eh_aniversariante', 'Nome')
-
-        if filtro_param == 'aniversariantes_mes':
-            queryset = queryset.filter(aniversario__month=hoje.month)
-        queryset = queryset.order_by('eh_aniversariante', 'Nome')
-
-        # Aplica ordenação manual posterior com base no total
-        if sort_param in ['valor_total', 'valor_total_asc']:
-            queryset = list(queryset)
-            queryset.sort(
-                key=lambda cliente: cliente.valor_total_venda_do_cliente,
-                reverse=(sort_param == 'valor_total')
-            )
-        elif sort_param == 'nome':
-            queryset = queryset.order_by('eh_aniversariante','Nome')
-        elif sort_param == 'nome_desc':
-            queryset = queryset.order_by('eh_aniversariante','-Nome')
-        elif sort_param == 'aniversario':
-            return Clientes.objects.filter(
-                aniversario__day=hoje.day,
-                aniversario__month=hoje.month
-            ).order_by('Nome')
-        else:
-            queryset = queryset.order_by('eh_aniversariante','-id')
-
-
-
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        hoje = date.today()
-        context['aniversariantes'] = Clientes.objects.filter(
-            aniversario_encrypted__day=hoje.day,
-            aniversario_encrypted__month=hoje.month
-        )
-        context['today'] = date.today()
-        return context
-
-    def get(self,request,*args,**kwargs):
-        hoje=date.today()
-        aniversariantes=Clientes.objects.filter(aniversario_encrypted__day=hoje.day,
-                                                aniversario_encrypted__month=hoje.month,
-                                                )
-        if aniversariantes.exists():
-            messages.info(self.request,f"🎉 Hoje temos "
-                                       f"{aniversariantes.count()} cliente(s) fazendo aniversário!")
-        return super().get(request,*args,**kwargs)
+    # def get_queryset(self):
+    #     sort_param = self.request.GET.get('sort', '')
+    #     filtro_param=self.request.GET.get('filtro', '')
+    #     hoje=date.today()
+    #
+    #     queryset = Clientes.objects.annotate(
+    #         eh_aniversariante=Case(
+    #             When(aniversario__day=hoje.day, aniversario__month=hoje.month, then=Value(0)),  # menor = vai pro topo
+    #             default=Value(1),
+    #             output_field=IntegerField()
+    #         )
+    #     ).order_by('eh_aniversariante', 'Nome')
+    #
+    #     if filtro_param == 'aniversariantes_mes':
+    #         queryset = queryset.filter(aniversario__month=hoje.month)
+    #     queryset = queryset.order_by('eh_aniversariante', 'Nome')
+    #
+    #     # Aplica ordenação manual posterior com base no total
+    #     if sort_param in ['valor_total', 'valor_total_asc']:
+    #         queryset = list(queryset)
+    #         queryset.sort(
+    #             key=lambda cliente: cliente.valor_total_venda_do_cliente,
+    #             reverse=(sort_param == 'valor_total')
+    #         )
+    #     elif sort_param == 'nome':
+    #         queryset = queryset.order_by('eh_aniversariante','Nome')
+    #     elif sort_param == 'nome_desc':
+    #         queryset = queryset.order_by('eh_aniversariante','-Nome')
+    #     elif sort_param == 'aniversario':
+    #         return Clientes.objects.filter(
+    #             aniversario__day=hoje.day,
+    #             aniversario__month=hoje.month
+    #         ).order_by('Nome')
+    #     else:
+    #         queryset = queryset.order_by('eh_aniversariante','-id')
+    #
+    #
+    #
+    #     return queryset
+    #
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #
+    #     hoje = date.today()
+    #     context['aniversariantes'] = Clientes.objects.filter(
+    #         aniversario_encrypted__day=hoje.day,
+    #         aniversario_encrypted__month=hoje.month
+    #     )
+    #     context['today'] = date.today()
+    #     return context
+    #
+    # def get(self,request,*args,**kwargs):
+    #     hoje=date.today()
+    #     aniversariantes=Clientes.objects.filter(aniversario_encrypted__day=hoje.day,
+    #                                             aniversario_encrypted__month=hoje.month,
+    #                                             )
+    #     if aniversariantes.exists():
+    #         messages.info(self.request,f"🎉 Hoje temos "
+    #                                    f"{aniversariantes.count()} cliente(s) fazendo aniversário!")
+    #     return super().get(request,*args,**kwargs)
 class Cliente(LoginRequiredMixin,DetailView ):
     model = Clientes
     template_name = 'posvendasapp/cliente_ficha.html'
