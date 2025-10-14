@@ -12,6 +12,8 @@ from cryptography.fernet import Fernet,InvalidToken
 from django.conf import settings
 import datetime
 import hashlib
+from django.contrib.auth.hashers import make_password
+
 # Create your models here.
 
 fernet_key = getattr(settings, 'FERNET_KEY', None)
@@ -104,12 +106,17 @@ class Clientes(models.Model):
     # Properties para CPF
     @property
     def cpf(self):
-        """Propriedade para obter CPF descriptografado"""
-        return self._decrypt_field(self.cpf_encrypted)
+        cache_key='_cached_cpf'
+        if cache_key in self.__dict__:
+            return self.__dict__[cache_key]
+        decrypted=self._decrypt_field(self.cpf_encrypted)
+        self.__dict__[cache_key] = decrypted
+        return decrypted
 
     @cpf.setter
     def cpf(self, value):
-        """Setter para CPF - valida e criptografa"""
+        if '_cached_cpf' in self.__dict__:
+            del self.__dict__['_cached_cpf']
         if not value:
             self.cpf_encrypted = None
             self.cpf_hash = None
@@ -124,12 +131,18 @@ class Clientes(models.Model):
     # Properties para Email
     @property
     def email(self):
-        """Propriedade para obter email descriptografado"""
-        return self._decrypt_field(self.email_encrypted)
+        cache_key='_cached_email'
+        if cache_key in self.__dict__:
+            return self.__dict__[cache_key]
+        decrypted=self._decrypt_field(self.email_encrypted)
+        self.__dict__[cache_key] = decrypted
+        return decrypted
+
 
     @email.setter
     def email(self, value):
-        """Setter para email - valida e criptografa"""
+        if '_cached_email' in self.__dict__:
+            del self.__dict__['_cached_email']
         if not value:
             self.email_encrypted = None
             return
@@ -145,12 +158,17 @@ class Clientes(models.Model):
     # Properties para Telefone
     @property
     def tel_contato(self):
-        """Propriedade para obter telefone descriptografado"""
-        return self._decrypt_field(self.tel_contato_encrypted)
+        cache_key='_cached_tel_contato'
+        if cache_key in self.__dict__:
+            return self.__dict__[cache_key]
+        decrypted=self._decrypt_field(self.tel_contato_encrypted)
+        self.__dict__[cache_key] = decrypted
+        return decrypted
 
     @tel_contato.setter
     def tel_contato(self, value):
-        """Setter para telefone - valida e criptografa"""
+        if '_cached_tel_contato' in self.__dict__:
+            del self.__dict__['_cached_tel_contato']
         if not value:
             self.tel_contato_encrypted = None
             self.tel_contato_hash = None

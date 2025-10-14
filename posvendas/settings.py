@@ -88,6 +88,12 @@ AUTHENTICATION_BACKENDS = [
     'axes.backends.AxesBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+]
 CSRIF_TRUSTED_ORGINS = ['https://posvendas-rj.rj.r.appspot.com']
 
 WSGI_APPLICATION = 'posvendas.wsgi.application'
