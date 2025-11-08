@@ -16,7 +16,7 @@ handlers:
 
 env_variables:
   DJANGO_SETTINGS_MODULE: "posvendas.settings"
-  SECRET_KEY: "django-insecure-g(=+cz%1!b$vwi7m67(k_9@&wm22^+s%xj#*2oyuetvjt7!9wn"
+  SECRET_KEY: config('SECRET_KEY')
   DB_NAME: config('DB_NAME')
   DB_USER: config('DB_USER')
   DB_PASSWORD: config('DB_PASSWORD')
