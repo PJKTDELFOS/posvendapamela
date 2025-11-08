@@ -17,12 +17,12 @@ handlers:
 env_variables:
   DJANGO_SETTINGS_MODULE: "posvendas.settings"
   SECRET_KEY: "django-insecure-g(=+cz%1!b$vwi7m67(k_9@&wm22^+s%xj#*2oyuetvjt7!9wn"
-  DB_NAME: "posvendasdb"
-  DB_USER: "adminalbert"
-  DB_PASSWORD: "$Uc<0(JCBBLP2J^r"
-  DB_PORT: "5432"
-  DB_HOST: "/cloudsql/posvendas-rj:southamerica-east1:yosefposvendas"
-  ALLOWED_HOSTS: "posvendas-rj.rj.r.appspot.com,127.0.0.1,localhost"
+  DB_NAME: config('DB_NAME')
+  DB_USER: config('DB_USER')
+  DB_PASSWORD: config('DB_PASSWORD')
+  DB_PORT: config('DB_PORT', default='')
+  DB_HOST: config('DB_HOST')
+  ALLOWED_HOSTS: config('ALLOWED_HOSTS')
 
 automatic_scaling:
   max_instances: 2
