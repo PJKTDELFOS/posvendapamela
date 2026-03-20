@@ -28,7 +28,6 @@ FERNET_KEY = config('FERNET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
-
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=lambda v: [s.strip() for s in v.split(',')])
 
 
@@ -101,6 +100,11 @@ WSGI_APPLICATION = 'posvendas.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+
+# DB_HOST = config('DB_HOST')
+# DB_PORT = config('DB_PORT', default='')
+import os
+# Se estiver usando socket unix do Cloud SQL, DB_PORT deve ficar vazio
 
 # DB_HOST = config('DB_HOST')
 # DB_PORT = config('DB_PORT', default='')
